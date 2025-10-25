@@ -1,1 +1,12 @@
-
+services:
+  huntarr:
+    image: huntarr/huntarr:latest
+    container_name: huntarr
+    restart: always
+    ports:
+      - 9705:9705
+    volumes:
+      - /mnt/software/opt/downloads/huntarr:/config
+    environment:
+      - TZ=America/Chicago
+networks: {}
