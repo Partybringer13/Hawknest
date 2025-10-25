@@ -1,1 +1,115 @@
+[[server]]
+name = "Local"
+[server.config]
+enabled = true
 
+##
+
+[[server]]
+name = "RaspberryPi"
+[server.config]
+address = "https://192.168.1.199:8120"
+enabled = true
+
+##
+
+[[stack]]
+name = "huntarr"
+[stack.config]
+server = "Local"
+linked_repo = "Hawknest"
+run_directory = "stacks/hawknas/huntarr"
+environment = """
+TZ=America/Chicago
+"""
+
+##
+
+[[stack]]
+name = "notifiarr"
+[stack.config]
+server = "Local"
+linked_repo = "Hawknest"
+run_directory = "stacks/hawknas/notifiarr"
+
+##
+
+[[stack]]
+name = "omada"
+[stack.config]
+server = "RaspberryPi"
+linked_repo = "Hawknest"
+run_directory = "stacks/raspberrypi/omada"
+environment = """
+TZ=America/Chicago
+"""
+
+##
+
+[[stack]]
+name = "qbittorrentvpn"
+[stack.config]
+server = "Local"
+linked_repo = "Hawknest"
+run_directory = "stacks/hawknas/qbittorrentvpn"
+environment = """
+TZ=America/Chicago
+"""
+
+##
+
+[[stack]]
+name = "repo-template"
+template = true
+[stack.config]
+server = "Local"
+linked_repo = "Hawknest"
+environment = """
+TZ=America/Chicago
+"""
+
+##
+
+[[repo]]
+name = "Hawknest"
+[repo.config]
+git_account = "partybringer13"
+repo = "Partybringer13/Hawknest"
+
+##
+
+[[procedure]]
+name = "Backup Core Database"
+description = "Triggers the Core database backup at the scheduled time."
+tags = ["system"]
+config.schedule = "Every day at 01:00"
+
+[[procedure.config.stage]]
+name = "Stage 1"
+enabled = true
+executions = [
+  { execution.type = "BackupCoreDatabase", execution.params = {}, enabled = true }
+]
+
+##
+
+[[procedure]]
+name = "Global Auto Update"
+description = "Pulls and auto updates Stacks and Deployments using 'poll_for_updates' or 'auto_update'."
+tags = ["system"]
+config.schedule = "Every day at 03:00"
+
+[[procedure.config.stage]]
+name = "Stage 1"
+enabled = true
+executions = [
+  { execution.type = "GlobalAutoUpdate", execution.params = {}, enabled = true }
+]
+
+##
+
+[[builder]]
+name = "Local"
+[builder.config]
+type = "Server"
+params.server_id = "Local"
