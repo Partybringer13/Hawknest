@@ -1,1 +1,63 @@
+[[server]]
+name = "Local"
+tags = ["Backup/Sync"]
+[server.config]
+enabled = true
 
+##
+
+[[server]]
+name = "RaspberryPi"
+tags = ["Backup/Sync"]
+[server.config]
+address = "https://192.168.1.199:8120"
+enabled = true
+
+##
+
+[[stack]]
+name = "huntarr"
+tags = ["Backup/Sync"]
+[stack.config]
+server = "Local"
+linked_repo = "Hawknest"
+run_directory = "stacks/hawknas/huntarr"
+environment = """
+TZ=America/Chicago
+"""
+
+##
+
+[[stack]]
+name = "notifiarr"
+tags = ["Backup/Sync"]
+[stack.config]
+server = "Local"
+linked_repo = "Hawknest"
+run_directory = "stacks/hawknas/notifiarr"
+
+##
+
+[[stack]]
+name = "omada"
+tags = ["Backup/Sync"]
+[stack.config]
+server = "RaspberryPi"
+linked_repo = "Hawknest"
+run_directory = "stacks/raspberrypi/omada"
+environment = """
+TZ=America/Chicago
+"""
+
+##
+
+[[stack]]
+name = "qbittorrentvpn"
+tags = ["Backup/Sync"]
+[stack.config]
+server = "Local"
+linked_repo = "Hawknest"
+run_directory = "stacks/hawknas/qbittorrentvpn"
+environment = """
+TZ=America/Chicago
+"""
