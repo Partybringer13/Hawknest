@@ -31,7 +31,7 @@ services:
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--certificatesresolvers.cloudflare.acme.dnschallenge=true"
       - "--certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare"
-      - "--certificatesresolvers.cloudflare.acme.email=you@example.com"
+      - "--certificatesresolvers.cloudflare.acme.email=partybringer@hotmail.com"
       - "--certificatesresolvers.cloudflare.acme.storage=/etc/traefik/acme.json"
       - "--certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
       - "--serverstransport.insecureskipverify=true"
