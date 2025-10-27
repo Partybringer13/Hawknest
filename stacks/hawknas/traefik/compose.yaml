@@ -47,6 +47,12 @@ services:
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.tls.certresolver=cloudflare"
       - "traefik.http.routers.traefik.middlewares=lanonly@file,basicauth@file,secureHeaders@file"
+      
+      - "traefik.http.routers.jellyfin.rule=Host(`jelly.hawknest.quest`)"
+      - "traefik.http.routers.jellyfin.entrypoints=websecure"
+      - "traefik.http.routers.jellyfin.tls.certresolver=cloudflare"
+      - "traefik.http.routers.jellyfin.middlewares=secureHeaders@file"
+      - "traefik.http.services.jellyfin.loadbalancer.server.url=http://192.168.1.125:8096"
 
 
 
