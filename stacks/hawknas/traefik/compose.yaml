@@ -14,9 +14,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    environment:
-      - CF_API_EMAIL=partybringer@hotmail.com               # your Cloudflare email
-      - CF_DNS_API_TOKEN=TzlsSxrCUdye3yC9HK5kweZBu1le_6UeFGGllGuA # DNS API token with edit zone access
+     env_file:
+      - /mnt/.ix-apps/app_mounts/traefik/.env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /mnt/.ix-apps/app_mounts/traefik/config:/etc/traefik
@@ -43,7 +42,7 @@ services:
     labels:
       # --- Dashboard ---
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.hawknest.quest`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${CF_DOMAIN}`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.tls.certresolver=cloudflare"
