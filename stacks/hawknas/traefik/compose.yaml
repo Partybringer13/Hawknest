@@ -23,6 +23,8 @@ services:
     command:
       - "--log.level=INFO"
       - "--api.dashboard=true"
+      - "--providers.file.directory=/etc/traefik"
+      - "--providers.file.watch=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
