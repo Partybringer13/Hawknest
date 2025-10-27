@@ -44,7 +44,7 @@ services:
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=cloudflare"
       - "traefik.http.services.traefik.loadbalancer.server.port=8080"
-      - "traefik.http.routers.traefik.middlewares=lanonly@file"
+      - "traefik.http.routers.traefik.middlewares=middlewares.yml"
 
 # optional security: dashboard limited to LAN
     extra_hosts:
