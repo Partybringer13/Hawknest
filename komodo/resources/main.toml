@@ -68,3 +68,31 @@ run_directory = "stacks/hawknas/qbittorrentvpn"
 environment = """
 TZ=America/Chicago
 """
+
+##
+
+[[stack]]
+name = "traefik"
+tags = ["Backup/Sync"]
+[stack.config]
+server = "Local"
+linked_repo = "Hawknest"
+run_directory = "stacks/hawknas/traefik"
+environment = """
+# ======================================
+# Traefik / Cloudflare Environment
+# ======================================
+
+# Cloudflare credentials (preferred modern format)
+CLOUDFLARE_DNS_API_TOKEN=AJjcwH_qpu5F-2bTePINCMVMtgSUF8zVDRNCLxzq # CLOUDFLARE_API_KEY=your_global_api_key_here
+
+# Optional legacy format (ignored if above is set)
+CLOUDFLARE_EMAIL=partybringer@hotmail.com 
+
+# Domain (used in labels)
+CF_DOMAIN=hawknest.quest
+
+
+
+TZ=America/Chicago
+"""
