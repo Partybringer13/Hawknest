@@ -1,4 +1,8 @@
+networks:
+  proxy:
+    external: true
 services:
+
   huntarr:
     image: huntarr/huntarr:latest
     container_name: huntarr
@@ -9,6 +13,5 @@ services:
       - /mnt/software/opt/downloads/huntarr:/config
     environment:
       - TZ=America/Chicago
-networks:
-  proxy:
-    external: true
+    networks:
+      - proxy
