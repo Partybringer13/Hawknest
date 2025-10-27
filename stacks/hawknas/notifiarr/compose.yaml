@@ -1,3 +1,6 @@
+networks:
+  proxy:
+    external: true
 services:
   # Replace or pass in APPDATA (below).
   notifiarr:
@@ -11,6 +14,6 @@ services:
       - /mnt/software/ix-applications/notifiarr:/config
       - /var/run/utmp:/var/run/utmp
       - /etc/machine-id:/etc/machine-id
-networks:
-  proxy:
-    external: true
+    networks:
+      - proxy      
+
