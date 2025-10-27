@@ -37,4 +37,6 @@ services:
       - PUID=568
       - PGID=568
     image: binhex/arch-qbittorrentvpn
-networks: {}
+networks:
+  proxy:
+    external: true
