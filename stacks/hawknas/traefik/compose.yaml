@@ -9,13 +9,13 @@ services:
     image: traefik:latest
     container_name: traefik
     restart: unless-stopped
+    env_file:
+      - /mnt/.ix-apps/app_mounts/traefik/.env
     networks:
       - proxy
     ports:
       - "80:80"
       - "443:443"
-     env_file:
-      - /mnt/.ix-apps/app_mounts/traefik/.env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /mnt/.ix-apps/app_mounts/traefik/config:/etc/traefik
