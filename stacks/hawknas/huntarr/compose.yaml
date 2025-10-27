@@ -15,3 +15,10 @@ services:
       - TZ=America/Chicago
     networks:
       - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.huntarr.rule=Host(`huntarr.hawknest.quest`)"
+      - "traefik.http.routers.huntarr.entrypoints=websecure"
+      - "traefik.http.routers.huntarr.tls.certresolver=cloudflare"
+      - "traefik.http.routers.huntarr.middlewares=lanonly@file,secureHeaders@file"
+      - "traefik.http.services.huntarr.loadbalancer.server.port=9705"
