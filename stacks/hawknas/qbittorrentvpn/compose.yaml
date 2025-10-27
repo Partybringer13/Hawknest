@@ -39,4 +39,6 @@ services:
       - UMASK=000
       - PUID=568
       - PGID=568
+    networks:
+      - proxy
     image: binhex/arch-qbittorrentvpn
