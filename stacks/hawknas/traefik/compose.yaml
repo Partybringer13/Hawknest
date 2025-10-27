@@ -41,18 +41,76 @@ services:
       - "--entrypoints.websecure.http.tls.domains[0].main=hawknest.quest"
       - "--entrypoints.websecure.http.tls.domains[0].sans=*.hawknest.quest"
     labels:
+      # --- Dashboard ---
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`traefik.hawknest.quest`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.tls.certresolver=cloudflare"
       - "traefik.http.routers.traefik.middlewares=lanonly@file,basicauth@file,secureHeaders@file"
-      
+
+      # --- Jellyfin ---
       - "traefik.http.routers.jellyfin.rule=Host(`jelly.hawknest.quest`)"
       - "traefik.http.routers.jellyfin.entrypoints=websecure"
       - "traefik.http.routers.jellyfin.tls.certresolver=cloudflare"
       - "traefik.http.routers.jellyfin.middlewares=secureHeaders@file"
       - "traefik.http.services.jellyfin.loadbalancer.server.url=http://192.168.1.125:8096"
+
+      # --- Jellyseerr ---
+      - "traefik.http.routers.jellyseerr.rule=Host(`jellyseerr.hawknest.quest`)"
+      - "traefik.http.routers.jellyseerr.entrypoints=websecure"
+      - "traefik.http.routers.jellyseerr.tls.certresolver=cloudflare"
+      - "traefik.http.routers.jellyseerr.middlewares=secureHeaders@file"
+      - "traefik.http.services.jellyseerr.loadbalancer.server.url=http://192.168.1.125:30042"
+
+      # --- Invidious ---
+      - "traefik.http.routers.invidious.rule=Host(`invidious.hawknest.quest`)"
+      - "traefik.http.routers.invidious.entrypoints=websecure"
+      - "traefik.http.routers.invidious.tls.certresolver=cloudflare"
+      - "traefik.http.routers.invidious.middlewares=secureHeaders@file"
+      - "traefik.http.services.invidious.loadbalancer.server.url=http://192.168.1.125:31008"
+
+      # --- Jellystat ---
+      - "traefik.http.routers.jellystat.rule=Host(`jellystat.hawknest.quest`)"
+      - "traefik.http.routers.jellystat.entrypoints=websecure"
+      - "traefik.http.routers.jellystat.tls.certresolver=cloudflare"
+      - "traefik.http.routers.jellystat.middlewares=secureHeaders@file"
+      - "traefik.http.services.jellystat.loadbalancer.server.url=http://192.168.1.125:30176"
+
+      # --- Sabnzbd (LAN only) ---
+      - "traefik.http.routers.sabnzbd.rule=Host(`sabnzbd.hawknest.quest`)"
+      - "traefik.http.routers.sabnzbd.entrypoints=websecure"
+      - "traefik.http.routers.sabnzbd.tls.certresolver=cloudflare"
+      - "traefik.http.routers.sabnzbd.middlewares=lanonly@file,secureHeaders@file"
+      - "traefik.http.services.sabnzbd.loadbalancer.server.url=http://192.168.1.125:30055"
+
+      # --- Sonarr (LAN only) ---
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.hawknest.quest`)"
+      - "traefik.http.routers.sonarr.entrypoints=websecure"
+      - "traefik.http.routers.sonarr.tls.certresolver=cloudflare"
+      - "traefik.http.routers.sonarr.middlewares=lanonly@file,secureHeaders@file"
+      - "traefik.http.services.sonarr.loadbalancer.server.url=http://192.168.1.125:30027"
+
+      # --- Sonarr-Anime (LAN only) ---
+      - "traefik.http.routers.sonarr-anime.rule=Host(`sonarr-anime.hawknest.quest`)"
+      - "traefik.http.routers.sonarr-anime.entrypoints=websecure"
+      - "traefik.http.routers.sonarr-anime.tls.certresolver=cloudflare"
+      - "traefik.http.routers.sonarr-anime.middlewares=lanonly@file,secureHeaders@file"
+      - "traefik.http.services.sonarr-anime.loadbalancer.server.url=http://192.168.1.125:30127"
+
+      # --- Radarr (LAN only) ---
+      - "traefik.http.routers.radarr.rule=Host(`radarr.hawknest.quest`)"
+      - "traefik.http.routers.radarr.entrypoints=websecure"
+      - "traefik.http.routers.radarr.tls.certresolver=cloudflare"
+      - "traefik.http.routers.radarr.middlewares=lanonly@file,secureHeaders@file"
+      - "traefik.http.services.radarr.loadbalancer.server.url=http://192.168.1.125:30025"
+
+      # --- Radarr-Anime (LAN only) ---
+      - "traefik.http.routers.radarr-anime.rule=Host(`radarr-anime.hawknest.quest`)"
+      - "traefik.http.routers.radarr-anime.entrypoints=websecure"
+      - "traefik.http.routers.radarr-anime.tls.certresolver=cloudflare"
+      - "traefik.http.routers.radarr-anime.middlewares=lanonly@file,secureHeaders@file"
+      - "traefik.http.services.radarr-anime.loadbalancer.server.url=http://192.168.1.125:30125"
 
 
 
