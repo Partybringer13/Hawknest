@@ -9,8 +9,6 @@ services:
     image: traefik:latest
     container_name: traefik
     restart: unless-stopped
-    env_file:
-      - /mnt/.ix-apps/app_mounts/komodo/periphery_root/repos/Hawknest/stacks/hawknas/traefik/.env
     networks:
       - proxy
     ports:
