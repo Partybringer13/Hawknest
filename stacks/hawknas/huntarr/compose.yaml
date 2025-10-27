@@ -9,4 +9,6 @@ services:
       - /mnt/software/opt/downloads/huntarr:/config
     environment:
       - TZ=America/Chicago
-networks: {}
+networks:
+  proxy:
+    external: true
