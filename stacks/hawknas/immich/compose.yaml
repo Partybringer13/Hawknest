@@ -67,8 +67,7 @@ services:
       - immich
 
   immich-db:
-    # Use pgvector-enabled image (Immich requires this)
-    image: tensorchord/pgvecto-rs:pg15
+    image: pgvector/pgvector:pg16
     container_name: immich-db
     restart: unless-stopped
     environment:
@@ -76,7 +75,6 @@ services:
       - POSTGRES_USER=immich
       - POSTGRES_PASSWORD=immich
       - POSTGRES_INITDB_ARGS=--data-checksums
-      - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:
       - /mnt/.ix-apps/app_mounts/immich/postgres:/var/lib/postgresql/data
     networks:
