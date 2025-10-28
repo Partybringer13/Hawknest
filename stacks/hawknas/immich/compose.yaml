@@ -68,7 +68,7 @@ services:
 
   immich-db:
     # Use pgvector-enabled image (Immich requires this)
-    image: tensorchord/pgvecto-rs:pg16
+    image: tensorchord/pgvecto-rs:pg15
     container_name: immich-db
     restart: unless-stopped
     environment:
