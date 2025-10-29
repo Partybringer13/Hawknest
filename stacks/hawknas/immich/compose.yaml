@@ -30,6 +30,7 @@ services:
       - "traefik.http.services.immich.loadbalancer.server.port=3001"
       - "traefik.http.routers.immich.tls=true"
       - "traefik.http.routers.immich.middlewares=secureHeaders@file"
+      - "traefik.http.routers.immich.tls.certresolver=cloudflares
       - "traefik.docker.network=proxy"   # <-- ensures Traefik binds to the correct network
 
   immich-machine-learning:
