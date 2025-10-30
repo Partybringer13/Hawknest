@@ -12,11 +12,10 @@ services:
     container_name: immich-server
     restart: unless-stopped
     depends_on:
-      immich-db:
-        condition: service_healthy
-      immich-redis:
-        condition: service_healthy
+      - immich-redis
+      - immich-db
     environment:
+      # ✅ Correct variable names for Immich v2.1.0
       - REDIS_HOST=immich-redis
       - DB_HOST=immich-db
       - DB_PORT=5432
@@ -44,10 +43,8 @@ services:
     container_name: immich-ml
     restart: unless-stopped
     depends_on:
-      immich-db:
-        condition: service_healthy
-      immich-redis:
-        condition: service_healthy
+      - immich-redis
+      - immich-db
     environment:
       - REDIS_HOST=immich-redis
       - DB_HOST=immich-db
@@ -70,12 +67,6 @@ services:
       - /mnt/.ix-apps/app_mounts/immich/redis:/data
     networks:
       - immich
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 5s
 
   immich-db:
     image: tensorchord/pgvecto-rs:pg16-v0.2.0
@@ -89,10 +80,3 @@ services:
       - /mnt/.ix-apps/app_mounts/immich/postgres:/var/lib/postgresql/data
     networks:
       - immich
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U immich -d immich"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
