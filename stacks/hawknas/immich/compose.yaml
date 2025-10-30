@@ -1,4 +1,4 @@
-#version: "3.9"
+version: "3.9"
 
 networks:
   proxy:
@@ -12,7 +12,7 @@ services:
     container_name: immich-server
     restart: unless-stopped
     env_file:
-      - .env
+      - /mnt/.ix-apps/app_mounts/immich/.env
     depends_on:
       immich-db:
         condition: service_healthy
@@ -38,7 +38,7 @@ services:
     container_name: immich-ml
     restart: unless-stopped
     env_file:
-      - .env
+      - /mnt/.ix-apps/app_mounts/immich/.env
     depends_on:
       immich-db:
         condition: service_healthy
