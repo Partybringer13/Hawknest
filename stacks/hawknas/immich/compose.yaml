@@ -13,16 +13,17 @@ services:
     restart: unless-stopped
     init: true
     depends_on:
-      - immich-redis
-      - immich-db
+      immich-redis:
+        condition: service_healthy
+      immich-db:
+        condition: service_healthy
     environment:
-      # ✅ Updated for Immich v2.1.0+
-      - IMMICH_REDIS_HOST=immich-redis
-      - IMMICH_DB_HOST=immich-db
-      - IMMICH_DB_PORT=5432
-      - IMMICH_DB_USERNAME=immich
-      - IMMICH_DB_PASSWORD=immich
-      - IMMICH_DB_DATABASE_NAME=immich
+      - REDIS_HOST=immich-redis
+      - DB_HOST=immich-db
+      - DB_PORT=5432
+      - DB_USERNAME=immich
+      - DB_PASSWORD=immich
+      - DB_DATABASE_NAME=immich
       - IMMICH_LOG_LEVEL=debug
     volumes:
       - /mnt/.ix-apps/app_mounts/immich/config:/config
@@ -31,7 +32,6 @@ services:
       - proxy
       - immich
     labels:
-      # --- Traefik reverse proxy configuration ---
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       - "traefik.http.routers.immich.rule=Host(`immich.hawknest.quest`)"
@@ -47,15 +47,17 @@ services:
     restart: unless-stopped
     init: true
     depends_on:
-      - immich-redis
-      - immich-db
+      immich-redis:
+        condition: service_healthy
+      immich-db:
+        condition: service_healthy
     environment:
-      - IMMICH_REDIS_HOST=immich-redis
-      - IMMICH_DB_HOST=immich-db
-      - IMMICH_DB_PORT=5432
-      - IMMICH_DB_USERNAME=immich
-      - IMMICH_DB_PASSWORD=immich
-      - IMMICH_DB_DATABASE_NAME=immich
+      - REDIS_HOST=immich-redis
+      - DB_HOST=immich-db
+      - DB_PORT=5432
+      - DB_USERNAME=immich
+      - DB_PASSWORD=immich
+      - DB_DATABASE_NAME=immich
     volumes:
       - /mnt/.ix-apps/app_mounts/immich/config:/config
       - /mnt/HawkPool/Media/Center/photos:/usr/src/app/upload
@@ -66,8 +68,8 @@ services:
     image: redis:7
     container_name: immich-redis
     restart: unless-stopped
-    command: redis-server --save 60 1 --loglevel warning
     hostname: immich-redis
+    command: redis-server --save 60 1 --loglevel warning
     volumes:
       - /mnt/.ix-apps/app_mounts/immich/redis:/data
     networks:
