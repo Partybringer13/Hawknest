@@ -1,4 +1,4 @@
-version: "3.9"
+#version: "3.9"
 
 networks:
   proxy:
@@ -36,10 +36,10 @@ services:
     networks:
       - immich
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U immich -d immich"]
+      test: ["CMD-SHELL", "pg_isready -U immich -d immich || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 8
       start_period: 10s
 
   immich-server:
@@ -52,19 +52,34 @@ services:
       immich-db:
         condition: service_healthy
     environment:
+      # Primary envs Immich expects
       - REDIS_HOST=immich-redis
+      - REDIS_PORT=6379
       - DB_HOST=immich-db
       - DB_PORT=5432
       - DB_USERNAME=immich
       - DB_PASSWORD=immich
       - DB_DATABASE_NAME=immich
       - IMMICH_LOG_LEVEL=debug
+
+      # Defensive: also set IMMICH_* variants many builds accept
+      - IMMICH_REDIS_HOST=immich-redis
+      - IMMICH_DB_HOST=immich-db
+      - IMMICH_DB_PORT=5432
+      - IMMICH_DB_USERNAME=immich
+      - IMMICH_DB_PASSWORD=immich
+      - IMMICH_DB_DATABASE_NAME=immich
+
+      # Explicit connection strings so nothing falls back to "redis" or "database"
+      - REDIS_URL=redis://immich-redis:6379
+      - DATABASE_URL=postgresql://immich:immich@immich-db:5432/immich
+
     volumes:
       - /mnt/.ix-apps/app_mounts/immich/config:/config
-      - /mnt/HawkPool/Media/Center/photos:/usr/src/app/upload
+      - /mnt/HawkPool/Media/Center/photos:/usr/src/app/upload:rw
     networks:
-      - proxy
       - immich
+      - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
@@ -73,8 +88,14 @@ services:
       - "traefik.http.routers.immich.tls=true"
       - "traefik.http.services.immich.loadbalancer.server.port=3001"
       - "traefik.http.routers.immich.middlewares=secureHeaders@file"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:3001/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
-  immich-machine-learning:
+  immich-ml:
     image: ghcr.io/immich-app/immich-machine-learning:release
     container_name: immich-ml
     restart: unless-stopped
