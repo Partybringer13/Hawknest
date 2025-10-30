@@ -11,18 +11,13 @@ services:
     image: ghcr.io/immich-app/immich-server:release
     container_name: immich-server
     restart: unless-stopped
+    env_file:
+      - /mnt/.ix-apps/app_mounts/immich/.env
     depends_on:
-      - immich-redis
-      - immich-db
-    environment:
-      # ✅ Immich v2.1.0 expects these legacy variable names
-      - REDIS_HOST=immich-redis
-      - DB_HOST=immich-db
-      - DB_PORT=5432
-      - DB_USERNAME=immich
-      - DB_PASSWORD=immich
-      - DB_DATABASE_NAME=immich
-      - IMMICH_LOG_LEVEL=debug
+      immich-db:
+        condition: service_healthy
+      immich-redis:
+        condition: service_healthy
     volumes:
       - /mnt/.ix-apps/app_mounts/immich/config:/config
       - /mnt/HawkPool/Media/Center/photos:/usr/src/app/upload
@@ -30,13 +25,11 @@ services:
       - proxy
       - immich
     labels:
-      # --- Traefik reverse proxy configuration ---
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       - "traefik.http.routers.immich.rule=Host(`immich.hawknest.quest`)"
       - "traefik.http.routers.immich.entrypoints=websecure"
       - "traefik.http.routers.immich.tls=true"
-      - "traefik.http.routers.immich.service=immich"
       - "traefik.http.services.immich.loadbalancer.server.port=3001"
       - "traefik.http.routers.immich.middlewares=secureHeaders@file"
 
@@ -44,16 +37,13 @@ services:
     image: ghcr.io/immich-app/immich-machine-learning:release
     container_name: immich-ml
     restart: unless-stopped
+    env_file:
+      - /mnt/.ix-apps/app_mounts/immich/.env
     depends_on:
-      - immich-redis
-      - immich-db
-    environment:
-      - REDIS_HOST=immich-redis
-      - DB_HOST=immich-db
-      - DB_PORT=5432
-      - DB_USERNAME=immich
-      - DB_PASSWORD=immich
-      - DB_DATABASE_NAME=immich
+      immich-db:
+        condition: service_healthy
+      immich-redis:
+        condition: service_healthy
     volumes:
       - /mnt/.ix-apps/app_mounts/immich/config:/config
       - /mnt/HawkPool/Media/Center/photos:/usr/src/app/upload
@@ -69,6 +59,12 @@ services:
       - /mnt/.ix-apps/app_mounts/immich/redis:/data
     networks:
       - immich
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   immich-db:
     image: tensorchord/pgvecto-rs:pg16-v0.2.0
@@ -82,3 +78,9 @@ services:
       - /mnt/.ix-apps/app_mounts/immich/postgres:/var/lib/postgresql/data
     networks:
       - immich
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U immich -d immich"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
