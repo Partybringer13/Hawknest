@@ -52,11 +52,15 @@ services:
       immich-db:
         condition: service_healthy
     environment:
-      # These two must be first — critical
+       # Primary URLs
       - REDIS_URL=redis://immich-redis:6379
       - DATABASE_URL=postgresql://immich:immich@immich-db:5432/immich
 
-      # Secondary fallback vars (redundant but harmless)
+      # Immich-specific host overrides (critical)
+      - IMMICH_REDIS_HOST=immich-redis
+      - IMMICH_DB_HOST=immich-db
+
+      # Secondary fallbacks (redundant but safe)
       - DB_HOST=immich-db
       - DB_PORT=5432
       - DB_USERNAME=immich
