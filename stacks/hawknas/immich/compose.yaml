@@ -7,14 +7,48 @@ networks:
     driver: bridge
 
 services:
+  immich-db:
+    image: tensorchord/pgvecto-rs:pg16-v0.2.0
+    container_name: immich-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=immich
+      - POSTGRES_USER=immich
+      - POSTGRES_PASSWORD=immich
+    volumes:
+      - /mnt/.ix-apps/app_mounts/immich/postgres:/var/lib/postgresql/data
+    networks:
+      - immich
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U immich -d immich"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  immich-redis:
+    image: redis:7
+    container_name: immich-redis
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - /mnt/.ix-apps/app_mounts/immich/redis:/data
+    networks:
+      - immich
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   immich-server:
     image: ghcr.io/immich-app/immich-server:release
     container_name: immich-server
     restart: unless-stopped
     depends_on:
-      - immich-redis
-      - immich-db
-    # Use inline environment variables to avoid Komodo .env parsing issues
+      immich-db:
+        condition: service_healthy
+      immich-redis:
+        condition: service_healthy
     environment:
       - REDIS_HOST=immich-redis
       - DB_HOST=immich-db
@@ -35,7 +69,6 @@ services:
       - "traefik.http.routers.immich.rule=Host(`immich.hawknest.quest`)"
       - "traefik.http.routers.immich.entrypoints=websecure"
       - "traefik.http.routers.immich.tls=true"
-      - "traefik.http.routers.immich.service=immich"
       - "traefik.http.services.immich.loadbalancer.server.port=3001"
       - "traefik.http.routers.immich.middlewares=secureHeaders@file"
 
@@ -44,8 +77,10 @@ services:
     container_name: immich-ml
     restart: unless-stopped
     depends_on:
-      - immich-redis
-      - immich-db
+      immich-db:
+        condition: service_healthy
+      immich-redis:
+        condition: service_healthy
     environment:
       - REDIS_HOST=immich-redis
       - DB_HOST=immich-db
@@ -56,29 +91,5 @@ services:
     volumes:
       - /mnt/.ix-apps/app_mounts/immich/config:/config
       - /mnt/HawkPool/Media/Center/photos:/usr/src/app/upload
-    networks:
-      - immich
-
-  immich-redis:
-    image: redis:7
-    container_name: immich-redis
-    restart: unless-stopped
-    command: redis-server --save 60 1 --loglevel warning
-    volumes:
-      - /mnt/.ix-apps/app_mounts/immich/redis:/data
-    networks:
-      - immich
-
-  immich-db:
-    # Must match your initialized database major version (see note below)
-    image: tensorchord/pgvecto-rs:pg16-v0.2.0
-    container_name: immich-db
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=immich
-      - POSTGRES_USER=immich
-      - POSTGRES_PASSWORD=immich
-    volumes:
-      - /mnt/.ix-apps/app_mounts/immich/postgres:/var/lib/postgresql/data
     networks:
       - immich
