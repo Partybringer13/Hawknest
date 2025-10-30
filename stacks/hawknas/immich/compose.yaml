@@ -7,23 +7,58 @@ networks:
     driver: bridge
 
 services:
-  immich-db:
-    image: tensorchord/pgvecto-rs:pg16-v0.2.0
-    container_name: immich-db
+  immich-server:
+    image: ghcr.io/immich-app/immich-server:release
+    container_name: immich-server
     restart: unless-stopped
+    depends_on:
+      - immich-redis
+      - immich-db
     environment:
-      - POSTGRES_DB=immich
-      - POSTGRES_USER=immich
-      - POSTGRES_PASSWORD=immich
+      # ✅ Updated for Immich v2.1.0+
+      - IMMICH_REDIS_HOST=immich-redis
+      - IMMICH_DB_HOST=immich-db
+      - IMMICH_DB_PORT=5432
+      - IMMICH_DB_USERNAME=immich
+      - IMMICH_DB_PASSWORD=immich
+      - IMMICH_DB_DATABASE_NAME=immich
+      - IMMICH_LOG_LEVEL=debug
     volumes:
-      - /mnt/.ix-apps/app_mounts/immich/postgres:/var/lib/postgresql/data
+      - /mnt/.ix-apps/app_mounts/immich/config:/config
+      - /mnt/HawkPool/Media/Center/photos:/usr/src/app/upload
+    networks:
+      - proxy
+      - immich
+    labels:
+      # --- Traefik reverse proxy configuration ---
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.immich.rule=Host(`immich.hawknest.quest`)"
+      - "traefik.http.routers.immich.entrypoints=websecure"
+      - "traefik.http.routers.immich.tls=true"
+      - "traefik.http.routers.immich.service=immich"
+      - "traefik.http.services.immich.loadbalancer.server.port=3001"
+      - "traefik.http.routers.immich.middlewares=secureHeaders@file"
+
+  immich-machine-learning:
+    image: ghcr.io/immich-app/immich-machine-learning:release
+    container_name: immich-ml
+    restart: unless-stopped
+    depends_on:
+      - immich-redis
+      - immich-db
+    environment:
+      - IMMICH_REDIS_HOST=immich-redis
+      - IMMICH_DB_HOST=immich-db
+      - IMMICH_DB_PORT=5432
+      - IMMICH_DB_USERNAME=immich
+      - IMMICH_DB_PASSWORD=immich
+      - IMMICH_DB_DATABASE_NAME=immich
+    volumes:
+      - /mnt/.ix-apps/app_mounts/immich/config:/config
+      - /mnt/HawkPool/Media/Center/photos:/usr/src/app/upload
     networks:
       - immich
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U immich -d immich"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
 
   immich-redis:
     image: redis:7
@@ -34,62 +69,16 @@ services:
       - /mnt/.ix-apps/app_mounts/immich/redis:/data
     networks:
       - immich
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
 
-  immich-server:
-    image: ghcr.io/immich-app/immich-server:release
-    container_name: immich-server
+  immich-db:
+    image: tensorchord/pgvecto-rs:pg16-v0.2.0
+    container_name: immich-db
     restart: unless-stopped
-    depends_on:
-      immich-db:
-        condition: service_healthy
-      immich-redis:
-        condition: service_healthy
     environment:
-      - REDIS_HOST=immich-redis
-      - DB_HOST=immich-db
-      - DB_PORT=5432
-      - DB_USERNAME=immich
-      - DB_PASSWORD=immich
-      - DB_DATABASE_NAME=immich
-      - IMMICH_LOG_LEVEL=debug
+      - POSTGRES_DB=immich
+      - POSTGRES_USER=immich
+      - POSTGRES_PASSWORD=immich
     volumes:
-      - /mnt/.ix-apps/app_mounts/immich/config:/config
-      - /mnt/HawkPool/Media/Center/photos:/usr/src/app/upload
-    networks:
-      - proxy
-      - immich
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      - "traefik.http.routers.immich.rule=Host(`immich.hawknest.quest`)"
-      - "traefik.http.routers.immich.entrypoints=websecure"
-      - "traefik.http.routers.immich.tls=true"
-      - "traefik.http.services.immich.loadbalancer.server.port=3001"
-      - "traefik.http.routers.immich.middlewares=secureHeaders@file"
-
-  immich-machine-learning:
-    image: ghcr.io/immich-app/immich-machine-learning:release
-    container_name: immich-ml
-    restart: unless-stopped
-    depends_on:
-      immich-db:
-        condition: service_healthy
-      immich-redis:
-        condition: service_healthy
-    environment:
-      - REDIS_HOST=immich-redis
-      - DB_HOST=immich-db
-      - DB_PORT=5432
-      - DB_USERNAME=immich
-      - DB_PASSWORD=immich
-      - DB_DATABASE_NAME=immich
-    volumes:
-      - /mnt/.ix-apps/app_mounts/immich/config:/config
-      - /mnt/HawkPool/Media/Center/photos:/usr/src/app/upload
+      - /mnt/.ix-apps/app_mounts/immich/postgres:/var/lib/postgresql/data
     networks:
       - immich
