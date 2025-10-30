@@ -14,15 +14,6 @@ services:
     depends_on:
       - immich-redis
       - immich-db
-    environment:
-      # ✅ Correct variable names for Immich v2.1.0
-      - REDIS_HOST=immich-redis
-      - DB_HOST=immich-db
-      - DB_PORT=5432
-      - DB_USERNAME=immich
-      - DB_PASSWORD=immich
-      - DB_DATABASE_NAME=immich
-      - IMMICH_LOG_LEVEL=debug
     volumes:
       - /mnt/.ix-apps/app_mounts/immich/config:/config
       - /mnt/HawkPool/Media/Center/photos:/usr/src/app/upload
