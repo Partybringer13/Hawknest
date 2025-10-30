@@ -42,7 +42,7 @@ services:
       retries: 8
       start_period: 10s
 
- immich-server:
+  immich-server:
     image: ghcr.io/immich-app/immich-server:release
     container_name: immich-server
     restart: unless-stopped
