@@ -12,7 +12,7 @@ services:
     container_name: immich-server
     restart: unless-stopped
     env_file:
-      -.env
+      - .env
     depends_on:
       immich-db:
         condition: service_healthy
