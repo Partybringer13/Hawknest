@@ -17,12 +17,12 @@ services:
       immich-redis:
         condition: service_healthy
     environment:
-      - IMMICH_REDIS_HOST=immich-redis
-      - IMMICH_DB_HOST=immich-db
-      - IMMICH_DB_PORT=5432
-      - IMMICH_DB_USERNAME=immich
-      - IMMICH_DB_PASSWORD=immich
-      - IMMICH_DB_DATABASE_NAME=immich
+      - REDIS_HOST=immich-redis
+      - DB_HOST=immich-db
+      - DB_PORT=5432
+      - DB_USERNAME=immich
+      - DB_PASSWORD=immich
+      - DB_DATABASE_NAME=immich
       - IMMICH_LOG_LEVEL=debug
     volumes:
       - /mnt/.ix-apps/app_mounts/immich/config:/config
@@ -49,12 +49,12 @@ services:
       immich-redis:
         condition: service_healthy
     environment:
-      - IMMICH_REDIS_HOST=immich-redis
-      - IMMICH_DB_HOST=immich-db
-      - IMMICH_DB_PORT=5432
-      - IMMICH_DB_USERNAME=immich
-      - IMMICH_DB_PASSWORD=immich
-      - IMMICH_DB_DATABASE_NAME=immich
+      - REDIS_HOST=immich-redis
+      - DB_HOST=immich-db
+      - DB_PORT=5432
+      - DB_USERNAME=immich
+      - DB_PASSWORD=immich
+      - DB_DATABASE_NAME=immich
     volumes:
       - /mnt/.ix-apps/app_mounts/immich/config:/config
       - /mnt/HawkPool/Media/Center/photos:/usr/src/app/upload
@@ -95,3 +95,4 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
