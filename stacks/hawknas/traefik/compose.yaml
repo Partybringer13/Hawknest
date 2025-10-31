@@ -15,8 +15,9 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      - CF_DNS_API_TOKEN:=${CF_DNS_API_TOKEN}
-      - CF_API_EMAIL=$[CF_API_EMAIL}
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+      CF_API_EMAIL: ${CF_API_EMAIL}
+      CF_DOMAIN: ${CF_DOMAIN}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /mnt/.ix-apps/app_mounts/traefik/config:/etc/traefik
