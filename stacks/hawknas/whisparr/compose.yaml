@@ -2,7 +2,7 @@
 
 services:
   whisparr:
-    image: hotio/whisparr:latest
+    image: ghcr.io/hotio/whisparr:latest
     container_name: whisparr
     restart: unless-stopped
     environment:
@@ -22,7 +22,7 @@ services:
       # Define the rule for routing traffic to this container
       - "traefik.http.routers.whisparr.rule=Host(`whisparr.${CF_DOMAIN}`)"  # Adjust for your domain
       - "traefik.http.routers.whisparr.entrypoints=websecure"  # Use the HTTPS entrypoint
-      - "traefik.http.services.whisparr.loadbalancer.server.port=8181"  # Expose port 8181 of the container
+      - "traefik.http.services.whisparr.loadbalancer.server.port=6969"  # Expose port 8181 of the container
       - "traefik.http.routers.whisparr.tls=true"  # Enable TLS (HTTPS)
       - "traefik.http.routers.whisparr.tls.certresolver=cloudflare"  # Use your Cloudflare certresolver
 
