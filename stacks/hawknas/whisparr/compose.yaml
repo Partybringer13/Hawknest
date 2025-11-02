@@ -5,6 +5,8 @@ services:
     image: ghcr.io/hotio/whisparr:latest
     container_name: whisparr
     restart: unless-stopped
+    ports:
+      - 6969:6969    
     environment:
       - PUID=1000        # Set the user id (PUID) of the container
       - PGID=1000        # Set the group id (PGID) of the container
