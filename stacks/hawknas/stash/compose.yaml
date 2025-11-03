@@ -1,9 +1,5 @@
 # APPNICENAME=Stash
 # APPDESCRIPTION=An organizer for your porn, written in Go
-networks:
-  proxy:
-    external: true
-
 services:
   stash:
     image: stashapp/stash:latest
@@ -55,3 +51,6 @@ services:
       - "traefik.http.routers.stash.tls=true"
       - "traefik.http.services.stash.loadbalancer.server.port=6969"
       - "traefik.http.routers.stash.middlewares=secureHeaders@file"      
+networks:
+  proxy:
+    external: true
