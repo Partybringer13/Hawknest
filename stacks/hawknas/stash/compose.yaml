@@ -1,13 +1,14 @@
 # APPNICENAME=Stash
 # APPDESCRIPTION=An organizer for your porn, written in Go
+networks:
+  proxy:
+    external: true
+
 services:
   stash:
     image: stashapp/stash:latest
     container_name: stash
     restart: unless-stopped
-    networks:
-      proxy:
-        external: true
     ## the container's port must be the same with the STASH_PORT in the environment section
     ports:
       - "6969:6969"
