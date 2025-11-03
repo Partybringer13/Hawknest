@@ -21,7 +21,7 @@ services:
       - STASH_METADATA=/metadata/
       - STASH_CACHE=/cache/
       ## Adjust below to change default port (9999)
-      - STASH_PORT=9999
+      - STASH_PORT=6969
     volumes:
       - /etc/localtime:/etc/localtime:ro
       ## Adjust below paths (the left part) to your liking.
@@ -41,3 +41,13 @@ services:
       - ./blobs:/blobs
       ## Where to store generated content (screenshots,previews,transcodes,sprites)
       - ./generated:/generated
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.stash.rule=Host(`stash.hawknest.quest`)"
+      - "traefik.http.routers.stash.entrypoints=websecure"
+      - "traefik.http.routers.stash.tls=true"
+      - "traefik.http.services.stash.loadbalancer.server.port=6969"
+      - "traefik.http.routers.stash.middlewares=secureHeaders@file"      
