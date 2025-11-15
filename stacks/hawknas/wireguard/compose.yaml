@@ -9,8 +9,8 @@ services:
       - SYS_MODULE
 #    network_mode: host            # fastest for throughput on SCALE 25.10
     environment:
-      - PUID=0
-      - PGID=0
+      - PUID=1000
+      - PGID=1000
       - TZ=America/Chicago
       - LOG_CONFS=true
     volumes:
