@@ -14,7 +14,7 @@ services:
       - TZ=America/Chicago
       - LOG_CONFS=true
     volumes:
-      - /mnt/software/ix-applications/wireguard:/config
+      - /mnt/software/ix-applications/wireguard/config:/config
       - /lib/modules:/lib/modules:ro
     ports:
       - 51820:51820/udp
