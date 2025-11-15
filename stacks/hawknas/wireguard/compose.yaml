@@ -13,6 +13,7 @@ services:
       - PGID=1000
       - TZ=America/Chicago
       - LOG_CONFS=true
+      - IPTABLES_BACKUP=yes      
     volumes:
       - /mnt/software/ix-applications/wireguard/config:/config
       - /lib/modules:/lib/modules
