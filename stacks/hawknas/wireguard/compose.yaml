@@ -15,7 +15,7 @@ services:
       - LOG_CONFS=true
     volumes:
       - /mnt/software/ix-applications/wireguard/config:/config
-      - /lib/modules:/lib/modules:ro
+      - /lib/modules:/lib/modules
     ports:
       - 51820:51820/udp
 #    sysctls:
