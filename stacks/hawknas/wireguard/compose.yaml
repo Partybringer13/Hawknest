@@ -4,9 +4,7 @@ services:
   wireguard:
     image: lscr.io/linuxserver/wireguard:latest
     container_name: wireguard
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
+    privileged: true
     network_mode: host            # fastest for throughput on SCALE 25.10
     environment:
       - PUID=1000
