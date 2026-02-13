@@ -1,15 +1,44 @@
+version: "3.9"
+
 services:
   valheim:
-    image: ghcr.io/lloesche/valheim-server
+    image: ghcr.io/lloesche/valheim-server:latest
+    container_name: valheim
     cap_add:
       - sys_nice
+
+    networks:
+      - traefik_proxy
+
     volumes:
-      - $HOME/valheim-server/config:/config
-      - $HOME/valheim-server/data:/opt/valheim
+      - /home/$USER/valheim-server/config:/config
+      - /home/$USER/valheim-server/data:/opt/valheim
+
+    # Only expose game UDP ports directly
     ports:
       - "2456-2458:2456-2458/udp"
-      - "9001:9001/tcp"
+
     env_file:
-      - $HOME/valheim-server/valheim.env
-    restart: always
+      - /home/$USER/valheim-server/valheim.env
+
+    labels:
+      - "traefik.enable=true"
+
+      # Router
+      - "traefik.http.routers.valheim.rule=Host(`valheim.yourdomain.com`)"
+      - "traefik.http.routers.valheim.entrypoints=websecure"
+      - "traefik.http.routers.valheim.tls=true"
+      - "traefik.http.routers.valheim.tls.certresolver=letsencrypt"
+
+      # Service
+      - "traefik.http.services.valheim.loadbalancer.server.port=9001"
+
+      # Optional auth middleware (recommended)
+      # - "traefik.http.routers.valheim.middlewares=auth@file"
+
+    restart: unless-stopped
     stop_grace_period: 2m
+
+networks:
+  traefik_proxy:
+    external: true
