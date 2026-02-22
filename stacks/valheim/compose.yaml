@@ -1,37 +1,26 @@
-version: "3.9"
-
 services:
   valheim:
     image: mbround18/valheim:latest
     container_name: valheim
     restart: unless-stopped
 
-    networks:
-      - traefik_proxy
-
     ports:
-      # Game traffic (must stay exposed as UDP)
       - 2456:2456/udp
       - 2457:2457/udp
       - 2458:2458/udp
 
     environment:
-      # ---- Core Server ----
       PORT: 2456
       NAME: "Welcome to HawkHeim"
       WORLD: "HawkHeim"
       PASSWORD: "getsome"
       TZ: "America/Chicago"
-
-      # 🔒 Private server (NOT listed publicly)
       PUBLIC: 0
 
-      # ---- Updates ----
       AUTO_UPDATE: 1
       AUTO_UPDATE_SCHEDULE: "0 1 * * *"
       UPDATE_ON_STARTUP: 0
 
-      # ---- Backups ----
       AUTO_BACKUP: 1
       AUTO_BACKUP_SCHEDULE: "*/15 * * * *"
       AUTO_BACKUP_REMOVE_OLD: 1
@@ -39,38 +28,11 @@ services:
       AUTO_BACKUP_ON_UPDATE: 1
       AUTO_BACKUP_ON_SHUTDOWN: 1
 
-      # ---- Discord ----
-      #WEBHOOK_URL: "https://discord.com/api/webhooks/IM_A_SNOWFLAKE/AND_I_AM_A_SECRET"
-
-      # =============================
-      #           MOD SYSTEM
-      # =============================
-
-      # Required for ValheimPlus
       BEPINEX: 1
       ODIN: 1
-
-      # Install ValheimPlus
       ODIN_INSTALL: "ValheimPlus-ValheimPlus"
-
-      # Optional: auto-reinstall mods if you edit ODIN_INSTALL
-      # ODIN_FORCE_INSTALL: 1
 
     volumes:
       - ./valheim/saves:/home/steam/.config/unity3d/IronGate/Valheim
       - ./valheim/server:/home/steam/valheim
       - ./valheim/backups:/home/steam/backups
-
-    labels:
-      - "traefik.enable=true"
-
-      # Optional management endpoint (if ever added later)
-      - "traefik.http.routers.valheim.rule=Host(`valheim.hawknest.quest`)"
-      - "traefik.http.routers.valheim.entrypoints=websecure"
-      - "traefik.http.routers.valheim.tls=true"
-      - "traefik.http.routers.valheim.tls.certresolver=letsencrypt"
-      - "traefik.http.services.valheim.loadbalancer.server.port=80"
-
-networks:
-  traefik_proxy:
-    external: true
