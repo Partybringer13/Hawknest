@@ -31,6 +31,7 @@ services:
       BEPINEX: 1
       ODIN: 1
       ODIN_INSTALL: "ValheimPlus-ValheimPlus"
+      TYPE: "ValheimPlus"
 
     volumes:
       - ./valheim/saves:/home/steam/.config/unity3d/IronGate/Valheim
