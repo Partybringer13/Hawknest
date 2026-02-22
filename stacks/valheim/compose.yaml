@@ -1,17 +1,24 @@
 version: "3.9"
-networks:
-  proxy:
-    external: true
+
 services:
-  valheim:
+valheim:
+    image: ghcr.io/lloesche/valheim-server:latest
     image: mbround18/valheim:latest
-    container_name: valheim
+container_name: valheim
+    cap_add:
+      - sys_nice
     restart: unless-stopped
 
-    networks:
-      - proxy
+networks:
+- traefik_proxy
 
-    ports:
+    volumes:
+      - /home/$USER/valheim-server/config:/config
+      - /home/$USER/valheim-server/data:/opt/valheim
+
+    # Only expose game UDP ports directly
+ports:
+      - "2456-2458:2456-2458/udp"
       # Game traffic (must stay exposed as UDP)
       - 2456:2456/udp
       - 2457:2457/udp
@@ -48,6 +55,8 @@ services:
       #           MOD SYSTEM
       # =============================
 
+    env_file:
+      - /home/$USER/valheim-server/valheim.env
       # Required for ValheimPlus
       BEPINEX: 1
       ODIN: 1
@@ -63,12 +72,26 @@ services:
       - ./valheim/server:/home/steam/valheim
       - ./valheim/backups:/home/steam/backups
 
-    labels:
-      - "traefik.enable=true"
+labels:
+- "traefik.enable=true"
 
+      # Router
+      - "traefik.http.routers.valheim.rule=Host(`valheim.yourdomain.com`)"
       # Optional management endpoint (if ever added later)
       - "traefik.http.routers.valheim.rule=Host(`valheim.hawknest.quest`)"
-      - "traefik.http.routers.valheim.entrypoints=websecure"
-      - "traefik.http.routers.valheim.tls=true"
-      - "traefik.http.routers.valheim.tls.certresolver=letsencrypt"
+- "traefik.http.routers.valheim.entrypoints=websecure"
+- "traefik.http.routers.valheim.tls=true"
+- "traefik.http.routers.valheim.tls.certresolver=letsencrypt"
+
+      # Service
+      - "traefik.http.services.valheim.loadbalancer.server.port=9001"
+
+      # Optional auth middleware (recommended)
+      # - "traefik.http.routers.valheim.middlewares=auth@file"
+
+    restart: unless-stopped
+    stop_grace_period: 2m
       - "traefik.http.services.valheim.loadbalancer.server.port=80"
+
+networks:
+traefik_proxy:
