@@ -1,24 +1,15 @@
 version: "3.9"
 
 services:
-valheim:
-    image: ghcr.io/lloesche/valheim-server:latest
+  valheim:
     image: mbround18/valheim:latest
-container_name: valheim
-    cap_add:
-      - sys_nice
+    container_name: valheim
     restart: unless-stopped
 
-networks:
-- traefik_proxy
+    networks:
+      - traefik_proxy
 
-    volumes:
-      - /home/$USER/valheim-server/config:/config
-      - /home/$USER/valheim-server/data:/opt/valheim
-
-    # Only expose game UDP ports directly
-ports:
-      - "2456-2458:2456-2458/udp"
+    ports:
       # Game traffic (must stay exposed as UDP)
       - 2456:2456/udp
       - 2457:2457/udp
@@ -55,8 +46,6 @@ ports:
       #           MOD SYSTEM
       # =============================
 
-    env_file:
-      - /home/$USER/valheim-server/valheim.env
       # Required for ValheimPlus
       BEPINEX: 1
       ODIN: 1
@@ -72,26 +61,16 @@ ports:
       - ./valheim/server:/home/steam/valheim
       - ./valheim/backups:/home/steam/backups
 
-labels:
-- "traefik.enable=true"
+    labels:
+      - "traefik.enable=true"
 
-      # Router
-      - "traefik.http.routers.valheim.rule=Host(`valheim.yourdomain.com`)"
       # Optional management endpoint (if ever added later)
       - "traefik.http.routers.valheim.rule=Host(`valheim.hawknest.quest`)"
-- "traefik.http.routers.valheim.entrypoints=websecure"
-- "traefik.http.routers.valheim.tls=true"
-- "traefik.http.routers.valheim.tls.certresolver=letsencrypt"
-
-      # Service
-      - "traefik.http.services.valheim.loadbalancer.server.port=9001"
-
-      # Optional auth middleware (recommended)
-      # - "traefik.http.routers.valheim.middlewares=auth@file"
-
-    restart: unless-stopped
-    stop_grace_period: 2m
+      - "traefik.http.routers.valheim.entrypoints=websecure"
+      - "traefik.http.routers.valheim.tls=true"
+      - "traefik.http.routers.valheim.tls.certresolver=letsencrypt"
       - "traefik.http.services.valheim.loadbalancer.server.port=80"
 
 networks:
-traefik_proxy:
+  traefik_proxy:
+    external: true
