@@ -16,6 +16,7 @@ services:
       PASSWORD: "getsome"
       TZ: "America/Chicago"
       PUBLIC: 0
+      TYPE: "ValheimPlus"
 
       AUTO_UPDATE: 1
       AUTO_UPDATE_SCHEDULE: "0 1 * * *"
@@ -31,7 +32,6 @@ services:
       #BEPINEX: 1
       #ODIN: 1
       #ODIN_INSTALL: "ValheimPlus-ValheimPlus"
-      TYPE: "ValheimPlus"
 
     volumes:
       - ./valheim/saves:/home/steam/.config/unity3d/IronGate/Valheim
