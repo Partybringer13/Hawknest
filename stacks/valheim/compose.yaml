@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
 
     networks:
-      - traefik_proxy
+      - proxy
 
     ports:
       # Game traffic (must stay exposed as UDP)
@@ -70,6 +70,3 @@ services:
       - "traefik.http.routers.valheim.tls=true"
       - "traefik.http.routers.valheim.tls.certresolver=letsencrypt"
       - "traefik.http.services.valheim.loadbalancer.server.port=80"
-
-networks:
-  - proxy
