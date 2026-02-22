@@ -28,7 +28,7 @@ services:
       AUTO_BACKUP_ON_UPDATE: 1
       AUTO_BACKUP_ON_SHUTDOWN: 1
 
-      BEPINEX: 1
+      #BEPINEX: 1
       #ODIN: 1
       #ODIN_INSTALL: "ValheimPlus-ValheimPlus"
       TYPE: "ValheimPlus"
