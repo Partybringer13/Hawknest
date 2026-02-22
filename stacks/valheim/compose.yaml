@@ -19,7 +19,6 @@ services:
       TYPE: "BepInEx"
       MODS: |
         https://github.com/Grantapher/ValheimPlus/releases/download/0.9.17.1/ValheimPlus.dll
-        https://thunderstore.io/package/download/CW_Jesse/BetterNetworking_Valheim/2.3.2/CW_Jesse-BetterNetworking_Valheim-2.3.2.zip
 
       AUTO_UPDATE: 1
       AUTO_UPDATE_SCHEDULE: "0 1 * * *"
