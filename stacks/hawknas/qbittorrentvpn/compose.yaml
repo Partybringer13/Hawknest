@@ -18,7 +18,7 @@ services:
       - /mnt/software/ix-applications/QBITTORRENT_DIR:/config
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - VPN_ENABLED=yes
+      - VPN_ENABLED=no
       - VPN_USER=ZG6Nqjj6LpecCZCiqadChhaj
       - VPN_PASS=exsiYyeAHPhPqEHG5qc7QDz7
       - VPN_PROV=custom
