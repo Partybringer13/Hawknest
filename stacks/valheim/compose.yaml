@@ -15,7 +15,7 @@ services:
       WORLD: "HawkHeim"
       PASSWORD: "getsome"
       TZ: "America/Chicago"
-      PUBLIC: 0
+      PUBLIC: 1
       TYPE: "BepInEx"
       MODS: |
         https://github.com/Grantapher/ValheimPlus/releases/download/0.9.17.1/ValheimPlus.dll
