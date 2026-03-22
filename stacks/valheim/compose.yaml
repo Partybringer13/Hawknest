@@ -19,8 +19,9 @@ services:
       TYPE: "BepInEx"
       MODS: |
         https://github.com/Grantapher/ValheimPlus/releases/download/0.9.17.1/ValheimPlus.dll
-        https://github.com/Partybringer13/Hawknest/releases/download/HawkHeim/Advize_PlantEasily.dll
-        https://github.com/Partybringer13/Hawknest/releases/download/HawkHeim/SKKGuardStonesRemoveMonsters.dll
+        https://gcdn.thunderstore.io/live/repository/packages/Advize-PlantEasily-2.1.0.zip
+        https://gcdn.thunderstore.io/live/repository/packages/Advize-PlantEverything-1.20.0.zip
+        https://gcdn.thunderstore.io/live/repository/packages/shudnal-ProtectiveWards-1.2.10.zip
 
       AUTO_UPDATE: 1
       AUTO_UPDATE_SCHEDULE: "0 1 * * *"
