@@ -1,0 +1,13 @@
+services:
+  neutarr:
+    image: iampuid0/neutarr:latest
+    container_name: neutarr
+    restart: unless-stopped
+    ports:
+      - "9705:9705"
+    volumes:
+      - ./config:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
