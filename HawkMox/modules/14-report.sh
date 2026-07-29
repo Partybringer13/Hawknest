@@ -3,6 +3,10 @@ set -Eeuo pipefail
 
 source "$(dirname "$0")/../lib/common.sh"
 
+if [[ -f /etc/hawkmox/node.conf ]]; then
+    source /etc/hawkmox/node.conf
+fi
+
 header "Module 14 - HawkMox Deployment Report"
 
 REPORT="/root/hawkmox-report.txt"
