@@ -2,9 +2,14 @@
 #
 # HawkMox
 # Module 02 - Storage Provisioning
+# Version 1.0
 #
 
 set -Eeuo pipefail
+
+###########################################
+# Colors
+###########################################
 
 RED="\e[31m"
 GREEN="\e[32m"
@@ -17,153 +22,253 @@ FAIL="${RED}[FAIL]${RESET}"
 INFO="${BLUE}[INFO]${RESET}"
 WARN="${YELLOW}[WARN]${RESET}"
 
+###########################################
+
 die() {
     echo -e "${FAIL} $1"
     exit 1
 }
 
-[[ $EUID -eq 0 ]] || die "Run as root"
+###########################################
+# Root
+###########################################
 
-BOOTDISK="/dev/mmcblk0"
-SSDDISK="/dev/sda"
+[[ $EUID -eq 0 ]] || die "Run as root."
+
+###########################################
+# Verify Proxmox
+###########################################
+
+command -v pvesm >/dev/null || die "Proxmox not detected."
+command -v sgdisk >/dev/null || die "sgdisk missing."
+command -v pvcreate >/dev/null || die "lvm2 not installed."
+
+###########################################
+# Detect boot disk
+###########################################
+
+ROOTDEV=$(findmnt -n -o SOURCE /)
+ROOTDISK=$(lsblk -no pkname "${ROOTDEV}" | head -1)
+
+BOOTDISK="/dev/${ROOTDISK}"
+
+###########################################
+# Detect SSD
+###########################################
+
+SSDDISK=""
+
+while read -r DEV TYPE SIZE
+do
+
+    [[ "$TYPE" != "disk" ]] && continue
+
+    [[ "$DEV" == "$ROOTDISK" ]] && continue
+
+    [[ "$DEV" =~ ^mmcblk ]] && continue
+    [[ "$DEV" =~ ^loop ]] && continue
+    [[ "$DEV" =~ ^sr ]] && continue
+
+    SSDDISK="/dev/${DEV}"
+
+done < <(lsblk -dn -o NAME,TYPE,SIZE)
+
+[[ -n "$SSDDISK" ]] || die "No SSD found."
+
+###########################################
+# Banner
+###########################################
+
+clear
 
 echo
-echo "========================================"
+echo "====================================================="
 echo " HawkMox Storage Provisioning"
-echo "========================================"
+echo "====================================================="
+echo
 
-############################################################
-# Safety Checks
-############################################################
-
-[[ -b "$BOOTDISK" ]] || die "Boot disk missing."
-[[ -b "$SSDDISK" ]] || die "SSD missing."
+echo "Boot Disk : ${BOOTDISK}"
+echo "SSD       : ${SSDDISK}"
 
 echo
-echo "Boot Disk : $BOOTDISK"
-echo "SSD       : $SSDDISK"
-
+echo "THIS WILL DESTROY ALL DATA ON ${SSDDISK}"
 echo
+
 read -rp "Type YES to continue: " CONFIRM
 
-[[ "$CONFIRM" == "YES" ]] || exit 1
+[[ "$CONFIRM" == "YES" ]] || exit 0
 
-############################################################
-# Disable Swap
-############################################################
+###########################################
+# Remove swap
+###########################################
 
 echo
-echo "Disabling swap..."
+echo "Removing swap..."
 
 swapoff -a || true
 
-lvremove -fy /dev/pve/swap 2>/dev/null || true
-lvremove -fy /dev/pve/pve-swap 2>/dev/null || true
+if lvdisplay /dev/pve/swap >/dev/null 2>&1
+then
+    lvremove -fy /dev/pve/swap
+fi
 
-sed -i '/swap/d' /etc/fstab
+sed -i '\|swap|d' /etc/fstab
 
 echo -e "${PASS} Swap removed"
 
-############################################################
+###########################################
 # Remove local-lvm
-############################################################
+###########################################
 
 echo
 echo "Removing local-lvm..."
 
-pvesm remove local-lvm 2>/dev/null || true
+if pvesm status | grep -q "^local-lvm"
+then
+    pvesm remove local-lvm || true
+fi
 
-lvremove -fy /dev/pve/data 2>/dev/null || true
-lvremove -fy /dev/pve/pve-data 2>/dev/null || true
-
-lvremove -fy /dev/pve/data_tmeta 2>/dev/null || true
-lvremove -fy /dev/pve/data_tdata 2>/dev/null || true
+if lvdisplay /dev/pve/data >/dev/null 2>&1
+then
+    lvremove -fy /dev/pve/data
+fi
 
 echo -e "${PASS} local-lvm removed"
 
-############################################################
+###########################################
 # Wipe SSD
-############################################################
+###########################################
 
 echo
 echo "Preparing SSD..."
 
-wipefs -af "$SSDDISK"
-sgdisk --zap-all "$SSDDISK"
+wipefs -af "${SSDDISK}"
 
-parted -s "$SSDDISK" mklabel gpt
-parted -s "$SSDDISK" mkpart primary 1MiB 100%
+sgdisk --zap-all "${SSDDISK}"
 
-partprobe "$SSDDISK"
+###########################################
+# Create GPT
+###########################################
 
-sleep 2
+echo
+echo "Creating GPT..."
+
+sgdisk \
+    -n 1:1MiB:0 \
+    -t 1:8E00 \
+    -c 1:"app-storage" \
+    "${SSDDISK}"
+
+partprobe "${SSDDISK}" || true
+udevadm settle
 
 PART="${SSDDISK}1"
 
-############################################################
+[[ -b "$PART" ]] || die "Partition was not created."
+
+###########################################
+# Create PV
+###########################################
+
+echo
+echo "Creating Physical Volume..."
+
+pvcreate -ff -y "${PART}"
+
+###########################################
 # Create VG
-############################################################
+###########################################
 
-pvcreate "$PART"
+echo
+echo "Creating Volume Group..."
 
-vgcreate appvg "$PART"
+vgcreate appvg "${PART}"
 
-############################################################
+###########################################
 # Create Thin Pool
-############################################################
+###########################################
+
+echo
+echo "Creating Thin Pool..."
 
 lvcreate \
     -l 90%VG \
     -T appvg/app-storage
 
-############################################################
+###########################################
 # Enable discard
-############################################################
+###########################################
+
+echo
+echo "Enabling discard..."
 
 lvchange --discard passdown appvg/app-storage
 
-############################################################
+###########################################
 # Register Storage
-############################################################
+###########################################
 
-if ! pvesm status | grep -q '^app-storage'; then
+echo
+echo "Registering Proxmox Storage..."
 
-    pvesm add lvmthin app-storage \
-        --vgname appvg \
-        --thinpool app-storage \
-        --content images,rootdir
+if ! grep -q "^lvmthin: app-storage" /etc/pve/storage.cfg
+then
+
+cat >> /etc/pve/storage.cfg <<EOF
+
+lvmthin: app-storage
+        thinpool app-storage
+        vgname appvg
+        content images,rootdir
+EOF
 
 fi
 
-############################################################
-# Enable TRIM
-############################################################
+###########################################
+# Enable weekly TRIM
+###########################################
+
+echo
+echo "Enabling TRIM..."
 
 systemctl enable fstrim.timer
 systemctl start fstrim.timer
 
-############################################################
+###########################################
 # Summary
-############################################################
+###########################################
 
 echo
-echo "========================================"
+echo "====================================================="
+echo " Storage Summary"
+echo "====================================================="
+echo
 
-echo "Current LVM"
+echo "Volume Groups"
 
 vgs
 
 echo
 
+echo "Logical Volumes"
+
 lvs
 
 echo
+
+echo "Storage"
 
 pvesm status
 
 echo
 
+echo "Block Devices"
+
 lsblk
 
 echo
 echo -e "${PASS} Storage provisioning complete."
+
+echo
+echo "Next step:"
+echo "Run Module 03."
