@@ -3,35 +3,113 @@
 set -Eeuo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-START_TIME=$(date +%s)
 
-source "${PROJECT_ROOT}/configs/config.sh"
-source "${PROJECT_ROOT}/lib/logging.sh"
-source "${PROJECT_ROOT}/lib/ui.sh"
+source "${PROJECT_ROOT}/lib/common.sh"
+
+###############################################
+# Installer
+###############################################
 
 header "HawkMox Installer"
 
-while IFS= read -r module; do
+require_root
 
-    echo
-    echo "Running $(basename "$module")"
-    echo
+START=1
+END=999
 
-    if ! bash "$module"; then
-        error "Installation failed in $(basename "$module")"
+usage() {
+cat <<EOF
+
+Usage:
+
+./install.sh
+    Run every module
+
+./install.sh 7
+    Resume from module 7
+
+./install.sh 7 10
+    Run modules 7 through 10
+
+EOF
+}
+
+###############################################
+# Parse arguments
+###############################################
+
+case $# in
+
+0)
+    ;;
+
+1)
+
+    [[ "$1" =~ ^[0-9]+$ ]] || {
+        usage
         exit 1
-    fi
+    }
 
-done < <(
-    find "${PROJECT_ROOT}/modules" \
-        -maxdepth 1 \
-        -type f \
-        -name '*.sh' \
-        | sort
+    START="$1"
+    ;;
+
+2)
+
+    [[ "$1" =~ ^[0-9]+$ ]] || exit 1
+    [[ "$2" =~ ^[0-9]+$ ]] || exit 1
+
+    START="$1"
+    END="$2"
+    ;;
+
+*)
+
+    usage
+    exit 1
+
+esac
+
+###############################################
+# Modules
+###############################################
+
+mapfile -t MODULES < <(
+
+find "${PROJECT_ROOT}/modules" \
+    -maxdepth 1 \
+    -type f \
+    -name '*.sh' \
+| sort
+
 )
 
-END_TIME=$(date +%s)
+###############################################
+# Execute
+###############################################
+
+for MODULE in "${MODULES[@]}"
+do
+
+    NUMBER="$(basename "$MODULE" | cut -d- -f1)"
+
+    NUMBER=$((10#$NUMBER))
+
+    if (( NUMBER < START || NUMBER > END ))
+    then
+        continue
+    fi
+
+    echo
+    echo "Running $(basename "$MODULE")"
+    echo
+
+    if ! bash "$MODULE"
+    then
+        die "Installation failed in $(basename "$MODULE")"
+    fi
+
+done
 
 echo
-success "HawkMox installation complete."
-info "Elapsed time: $((END_TIME - START_TIME)) seconds"
+
+success "HawkMox installation completed successfully."
