@@ -1,39 +1,35 @@
 #!/usr/bin/env bash
 
+set -Eeuo pipefail
+
 source "$(dirname "$0")/../lib/common.sh"
 
 header "Module 12 - Storage Finalization"
 
+############################################################
 section "Removing obsolete storage definitions"
 
 if storage_exists local-lvm; then
+    info "Removing local-lvm..."
     pvesm remove local-lvm
-    pass "Removed local-lvm"
-else
-    info "local-lvm already absent."
 fi
 
-section "Reconfiguring local storage"
+success "Legacy storage definitions removed."
 
-mkdir -p /srv/hawkmox
+############################################################
+section "Verifying HawkMox storage"
 
-if storage_exists local; then
-    pvesm set local \
-        --path /srv/hawkmox \
-        --content iso,vztmpl,backup,snippets,import
-    pass "Updated local storage"
-else
-    pvesm add dir local \
-        --path /srv/hawkmox \
-        --content iso,vztmpl,backup,snippets,import
-    pass "Created local storage"
-fi
+storage_exists hawktank  || die "hawktank missing."
+storage_exists hawkfiles || die "hawkfiles missing."
 
-section "Storage Status"
+success "hawktank verified."
+success "hawkfiles verified."
 
+############################################################
+section "Current Configuration"
+
+cat /etc/pve/storage.cfg
+echo
 pvesm status
 
-echo
-cat /etc/pve/storage.cfg
-
-pass "Module 12 completed successfully."
+success "Module 12 completed successfully."
