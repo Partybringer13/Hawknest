@@ -11,6 +11,7 @@ source "${PROJECT_ROOT}/lib/common.sh"
 ###############################################
 
 header "HawkMox Installer"
+START_TIME=$(date +%s)
 
 require_root
 
@@ -111,5 +112,12 @@ do
 done
 
 echo
+END_TIME=$(date +%s)
+
+ELAPSED=$((END_TIME-START_TIME))
+
+echo
 
 success "HawkMox installation completed successfully."
+
+info "Elapsed Time : ${ELAPSED} seconds"
