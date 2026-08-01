@@ -1,69 +1,53 @@
-header "Module 16 - Final Cleanup"
+#!/usr/bin/env bash
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ARCHIVE="/root/hawkmox-backup.tar.gz"
+set -Eeuo pipefail
 
-############################################################
-section "Archive HawkMox"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${PROJECT_ROOT}/lib/common.sh"
 
-if [[ -d "$PROJECT_ROOT" ]]; then
-    tar -czf "$ARCHIVE" \
-        -C "$(dirname "$PROJECT_ROOT")" \
-        "$(basename "$PROJECT_ROOT")"
-
-    success "Installer archived."
-    info "Archive: $ARCHIVE"
-else
-    warning "Project directory not found."
-fi
+header "Module 16 - Cleanup"
 
 ############################################################
-section "APT Cleanup"
+section "Cleaning Package Cache"
 
-apt-get autoremove -y
-apt-get autoclean -y
-apt-get clean
+apt clean
+
+apt autoremove -y
+
+############################################################
+section "Removing Logs"
+
+journalctl --vacuum-time=7d >/dev/null 2>&1 || true
+
+rm -rf /var/cache/apt/*
 
 rm -rf /var/lib/apt/lists/*
 
-success "APT cache cleaned."
+############################################################
+section "Archiving Installer"
+
+ARCHIVE="/root/HawkMox-$(date +%Y%m%d).tar.gz"
+
+tar czf "${ARCHIVE}" \
+    -C "$(dirname "${PROJECT_ROOT}")" \
+    "$(basename "${PROJECT_ROOT}")"
+
+pass "Installer archived."
 
 ############################################################
-section "Journal Cleanup"
+section "Removing Installer"
 
-journalctl --vacuum-time=7d >/dev/null 2>&1 || true
-journalctl --vacuum-size=100M >/dev/null 2>&1 || true
+rm -rf "${PROJECT_ROOT}"
 
-success "System journal trimmed."
-
-############################################################
-section "Temporary Files"
-
-rm -rf /tmp/*
-rm -rf /var/tmp/*
-
-success "Temporary files removed."
+pass "Installer removed."
 
 ############################################################
-section "Installer Removal"
+section "Filesystem"
 
-if [[ -d "$PROJECT_ROOT" ]]; then
-    rm -rf "$PROJECT_ROOT"
-    success "Installer removed."
-fi
+sync
 
-############################################################
-section "Filesystem Trim"
-
-fstrim -av || true
-
-############################################################
-section "Storage Usage"
-
-df -h /
+df -h
 
 echo
-du -sh /root 2>/dev/null || true
 
-echo
-success "Module 16 completed successfully."
+pass "Module 16 completed successfully."
