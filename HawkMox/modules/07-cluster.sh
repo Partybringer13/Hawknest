@@ -7,46 +7,43 @@ source "${PROJECT_ROOT}/lib/common.sh"
 
 header "Module 07 - Cluster"
 
-section "Cluster Detection"
+############################################################
+section "Cluster Status"
 
-if pvecm status >/dev/null 2>&1; then
+if cluster_exists
+then
 
-    if pvecm status | grep -q "Cluster name"; then
+    success "Already a cluster member."
 
-        success "Node already belongs to a cluster."
+else
 
-        pvecm status
-
-        exit 0
-
-    fi
+    join_cluster
 
 fi
 
-section "Joining Cluster"
+############################################################
+section "Waiting for Quorum"
 
-[[ -n "${CLUSTER_MASTER_IP}" ]] || die "CLUSTER_MASTER not configured."
+COUNT=0
 
-info "Cluster Master: ${CLUSTER_MASTER_IP}"
+until cluster_quorate
+do
 
-echo
-echo "About to join cluster '${CLUSTER_NAME}'"
-echo
+    ((COUNT++))
 
-read -rp "Type YES to continue: " CONFIRM
+    [[ ${COUNT} -gt 30 ]] && die "Cluster quorum not reached."
 
-[[ "${CONFIRM}" == "YES" ]] || die "Cancelled."
+    sleep 2
 
-pvecm add "${CLUSTER_MASTER_IP}"
+done
 
-section "Verification"
+success "Cluster quorum established."
 
-echo
+############################################################
+section "Cluster"
 
 pvecm status
 
 echo
 
-pvecm nodes
-
-success "Cluster successfully joined."
+success "Module 07 completed successfully."
