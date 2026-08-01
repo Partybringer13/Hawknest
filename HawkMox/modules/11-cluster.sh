@@ -1,52 +1,53 @@
 #!/usr/bin/env bash
 
-source "$(dirname "$0")/../lib/common.sh"
+set -Eeuo pipefail
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${PROJECT_ROOT}/lib/common.sh"
 
 header "Module 11 - Cluster Validation"
 
+############################################################
 section "Cluster Status"
 
-if ! command -v pvecm >/dev/null 2>&1; then
-    fail "This node is not running Proxmox VE."
-fi
+NAME="$(cluster_name)"
+NODES="$(cluster_nodes)"
 
-if ! pvecm status >/dev/null 2>&1; then
-    fail "This node is not part of a cluster."
-fi
+info "Cluster : ${NAME}"
+info "Nodes   : ${NODES}"
 
-CLUSTER_NAME=$(pvecm status 2>/dev/null | awk -F': *' '/Name:/ {print $2}')
-NODE_COUNT=$(pvecm status 2>/dev/null | awk -F': *' '/Nodes:/ {print $2}')
-QUORATE=$(pvecm status 2>/dev/null | awk -F': *' '/Quorate:/ {print $2}')
-
-info "Cluster : ${CLUSTER_NAME}"
-info "Nodes   : ${NODE_COUNT}"
-info "Quorate : ${QUORATE}"
-
-[[ "$QUORATE" == "Yes" ]] || fail "Cluster is not quorate."
+cluster_quorate || die "Cluster is not quorate."
 
 pass "Cluster healthy."
 
+############################################################
 section "Node List"
 
 pvecm nodes
 
+############################################################
 section "Corosync"
 
-grep -E "ring0_addr|name:" /etc/pve/corosync.conf
+grep -E "cluster_name|name:|ring0_addr" /etc/pve/corosync.conf
 
+############################################################
 section "Storage"
 
 pvesm status
 
+############################################################
 section "Time Synchronization"
 
-chronyc tracking | sed -n '1,8p'
+chronyc tracking | head -8
 
+############################################################
 section "Network"
 
-ip -4 addr show vmbr0 | grep inet
+ip addr show vmbr0 | grep "inet "
+
 ip route | grep default
 
+############################################################
 section "Summary"
 
 pass "Cluster quorum confirmed."
