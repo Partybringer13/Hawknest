@@ -2,34 +2,42 @@
 
 set -Eeuo pipefail
 
-source "$(dirname "$0")/../lib/common.sh"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${PROJECT_ROOT}/lib/common.sh"
 
 header "Module 12 - Storage Finalization"
 
 ############################################################
 section "Removing obsolete storage definitions"
 
-if storage_exists local-lvm; then
-    info "Removing local-lvm..."
-    pvesm remove local-lvm
-fi
+remove_storage local-lvm
 
-success "Legacy storage definitions removed."
+remove_storage local
+
+pass "Legacy storage definitions removed."
 
 ############################################################
 section "Verifying HawkMox storage"
 
-storage_exists hawktank  || die "hawktank missing."
-storage_exists hawkfiles || die "hawkfiles missing."
+storage_exists "${ZFS_STORAGE_ID}" \
+    || die "${ZFS_STORAGE_ID} missing."
 
-success "hawktank verified."
-success "hawkfiles verified."
+storage_exists "${DIR_STORAGE_ID}" \
+    || die "${DIR_STORAGE_ID} missing."
+
+pass "${ZFS_STORAGE_ID} verified."
+
+pass "${DIR_STORAGE_ID} verified."
 
 ############################################################
 section "Current Configuration"
 
 cat /etc/pve/storage.cfg
+
 echo
+
 pvesm status
 
-success "Module 12 completed successfully."
+echo
+
+pass "Module 12 completed successfully."
