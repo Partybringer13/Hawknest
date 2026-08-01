@@ -18,17 +18,13 @@ require_command() {
 }
 
 check_proxmox() {
-
     [[ -f /etc/pve/storage.cfg ]] \
         || die "This does not appear to be a Proxmox host."
-
 }
 
 check_zfs() {
-
     require_command zpool
     require_command zfs
-
 }
 
 ############################################################
@@ -36,24 +32,18 @@ check_zfs() {
 ############################################################
 
 verify_disk_exists() {
-
     local disk="$1"
 
-    [[ -b "${disk}" ]] \
-        || die "Disk ${disk} not found."
-
+    [[ -b "$disk" ]] \
+        || die "Disk $disk not found."
 }
 
 disk_size() {
-
     lsblk -dn -o SIZE "$1"
-
 }
 
 disk_model() {
-
     lsblk -dn -o MODEL "$1"
-
 }
 
 ############################################################
@@ -61,21 +51,19 @@ disk_model() {
 ############################################################
 
 pool_exists() {
+    local pool="$1"
 
-    zpool list -H "$1" >/dev/null 2>&1
-
+    zpool list -H -o name 2>/dev/null | grep -Fxq "$pool"
 }
 
 dataset_exists() {
+    local dataset="$1"
 
-    zfs list -H "$1" >/dev/null 2>&1
-
+    zfs list -H -o name 2>/dev/null | grep -Fxq "$dataset"
 }
 
 storage_exists() {
-
-    pvesm status 2>/dev/null | awk '{print $1}' | grep -qx "$1"
-
+    pvesm status 2>/dev/null | awk 'NR>1 {print $1}' | grep -Fxq "$1"
 }
 
 ############################################################
@@ -83,11 +71,7 @@ storage_exists() {
 ############################################################
 
 ensure_directory() {
-
-    local dir="$1"
-
-    mkdir -p "$dir"
-
+    mkdir -p "$1"
 }
 
 ############################################################
@@ -95,26 +79,20 @@ ensure_directory() {
 ############################################################
 
 cpu_model() {
-
     lscpu | awk -F: '/Model name/{
         gsub(/^[ \t]+/, "", $2)
         print $2
     }'
-
 }
 
 memory_gib() {
-
     awk '/MemTotal/{
         printf "%.1f", $2/1024/1024
     }' /proc/meminfo
-
 }
 
 hardware_model() {
-
     tr -d '\0' </sys/class/dmi/id/product_name
-
 }
 
 ############################################################
@@ -122,19 +100,11 @@ hardware_model() {
 ############################################################
 
 restart_service() {
-
-    local service="$1"
-
-    systemctl restart "$service"
-
+    systemctl restart "$1"
 }
 
 enable_service() {
-
-    local service="$1"
-
-    systemctl enable "$service"
-
+    systemctl enable "$1"
 }
 
 ############################################################
@@ -142,21 +112,19 @@ enable_service() {
 ############################################################
 
 assert_not_mounted() {
-
     local device="$1"
 
     if mount | grep -q "^${device}"; then
-        die "${device} is mounted."
+        die "$device is mounted."
     fi
-
 }
 
 assert_pool_missing() {
-
     local pool="$1"
 
-    pool_exists "$pool" && die "Pool ${pool} already exists."
-
+    if pool_exists "$pool"; then
+        die "Pool '$pool' already exists."
+    fi
 }
 
 ############################################################
@@ -164,11 +132,9 @@ assert_pool_missing() {
 ############################################################
 
 system_summary() {
-
     info "Hardware : $(hardware_model)"
     info "CPU      : $(cpu_model)"
     info "Memory   : $(memory_gib) GiB"
     info "Boot Disk: ${BOOT_DISK} ($(disk_size "${BOOT_DISK}"))"
     info "App Disk : ${APP_DISK} ($(disk_size "${APP_DISK}"))"
-
 }
