@@ -5,43 +5,34 @@ set -Eeuo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${PROJECT_ROOT}/lib/common.sh"
 
-header "Module 06 - Network Baseline"
+header "Module 06 - Network Validation"
 
-section "Detecting management interface"
+############################################################
+section "Interface"
 
-IFACE="$(ip -o -4 route show to default | awk '{print $5}' | head -1)"
+ip -br addr
 
-[[ -n "$IFACE" ]] || die "Unable to determine management interface."
+############################################################
+section "Gateway"
 
-IPADDR="$(ip -4 -o addr show "$IFACE" | awk '{print $4}')"
-GATEWAY="$(ip route | awk '/default/ {print $3; exit}')"
-
-info "Interface : ${IFACE}"
-info "Address   : ${IPADDR}"
-info "Gateway   : ${GATEWAY}"
-
-section "Checking connectivity"
-
-ping -c2 "${GATEWAY}" >/dev/null
+check_gateway
 
 success "Gateway reachable."
 
-ping -c2 1.1.1.1 >/dev/null
+############################################################
+section "Internet"
+
+check_internet
 
 success "Internet reachable."
 
-section "Checking DNS"
+############################################################
+section "DNS"
 
-getent hosts github.com >/dev/null
+getent hosts download.proxmox.com >/dev/null
 
-success "DNS resolution working."
+success "DNS resolution verified."
 
-section "Checking time synchronization"
+############################################################
 
-timedatectl show -p NTPSynchronized --value | grep -qi yes \
-    || warning "NTP not synchronized."
-
-timedatectl show -p SystemClockSynchronized --value | grep -qi yes \
-    || warning "Clock not synchronized."
-
-success "Network validation complete."
+success "Module 06 completed successfully."
