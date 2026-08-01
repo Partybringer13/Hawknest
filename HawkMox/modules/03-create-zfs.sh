@@ -8,57 +8,42 @@ source "${PROJECT_ROOT}/lib/common.sh"
 
 header "Module 03 - Create ZFS"
 
+############################################################
+
 section "Pre-flight Checks"
 
 check_zfs
+
 verify_disk_exists "${APP_DISK}"
-assert_pool_missing "${POOL_NAME}"
 
 ROOTDISK="$(findmnt -n -o SOURCE / | sed 's/p[0-9]*$//')"
 
-if [[ "${APP_DISK}" == "${ROOTDISK}" ]]; then
-    die "APP_DISK points to the boot device (${APP_DISK}). Refusing to continue."
-fi
+[[ "${APP_DISK}" != "${ROOTDISK}" ]] \
+    || die "APP_DISK points at the boot disk."
 
 info "Application Disk : ${APP_DISK}"
-info "Pool Name        : ${POOL_NAME}"
+info "Pool             : ${POOL_NAME}"
 
-section "Destroy Existing Signatures"
+############################################################
 
-wipefs -af "${APP_DISK}" >/dev/null 2>&1 || true
-sgdisk --zap-all "${APP_DISK}" >/dev/null 2>&1 || true
+section "Creating Storage"
 
-section "Creating ZFS Pool"
+ensure_pool
 
-zpool create \
-    -f \
-    -o ashift=12 \
-    -O compression=lz4 \
-    -O atime=off \
-    -O xattr=sa \
-    -O acltype=posixacl \
-    -O mountpoint=none \
-    "${POOL_NAME}" \
-    "${APP_DISK}"
+ensure_vm_dataset
 
-section "Creating Datasets"
+ensure_file_dataset
 
-zfs create \
-    -o mountpoint=none \
-    "${POOL_NAME}/vmstore"
+############################################################
 
-zfs create \
-    -o mountpoint=/srv/hawkmox \
-    "${POOL_NAME}/files"
-
-zfs set compression=lz4 "${POOL_NAME}/files"
-
-section "Pool Status"
+section "Status"
 
 zpool status "${POOL_NAME}"
 
 echo
 
 zfs list
+
+echo
 
 success "Module 03 completed successfully."
