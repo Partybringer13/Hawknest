@@ -58,6 +58,7 @@ IMPORT_DIR="${FILE_MOUNT}/import"
 #
 
 CLUSTER_NAME="HawkCluster"
+CLUSTER_MASTER="192.168.1.10"
 
 #
 # Logging
