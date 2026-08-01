@@ -1,60 +1,48 @@
 #!/usr/bin/env bash
+
 set -Eeuo pipefail
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-source "${PROJECT_ROOT}/lib/common.sh"
+source "$(dirname "$0")/../lib/common.sh"
 
 header "Module 10 - Storage Policy"
 
-section "Verifying ZFS"
+section "Verify Storages"
 
-zpool list hawktank >/dev/null
-
-zfs create -p hawktank/vmstore 2>/dev/null || true
-zfs set mountpoint=none hawktank/vmstore
-
-zfs create -p hawktank/data 2>/dev/null || true
-zfs set mountpoint=/var/lib/vz hawktank/data
-
-zfs create -p hawktank/iso 2>/dev/null || true
-zfs create -p hawktank/templates 2>/dev/null || true
-zfs create -p hawktank/import 2>/dev/null || true
-zfs create -p hawktank/backups 2>/dev/null || true
-zfs create -p hawktank/snippets 2>/dev/null || true
-
-mkdir -p /srv/hawkmox/{iso,vztmpl,backup,snippets,import}
-
-section "Configuring Proxmox Storage"
-
-if ! pvesm status | awk '{print $1}' | grep -qx hawktank; then
-    pvesm add zfspool hawktank \
-        --pool hawktank/vmstore \
-        --content images,rootdir \
-        --sparse 1 \
-        --blocksize 16k
+if storage_exists hawktank; then
+    pass "hawktank present."
+else
+    die "hawktank missing."
 fi
 
-if ! pvesm status | awk '{print $1}' | grep -qx hawkfiles; then
-    pvesm add dir hawkfiles \
-        --path /srv/hawkmox \
-        --content iso,vztmpl,backup,snippets,import
+if storage_exists hawkfiles; then
+    pass "hawkfiles present."
+else
+    die "hawkfiles missing."
 fi
 
-if pvesm status | awk '{print $1}' | grep -qx local; then
-    pvesm set local \
-        --path /var/lib/vz \
-        --content iso,vztmpl,backup,snippets
-fi
+section "Configure hawktank"
 
-section "Verification"
+pvesm set hawktank \
+    --content images,rootdir \
+    --sparse 1 >/dev/null
+
+pass "hawktank configured."
+
+section "Configure hawkfiles"
+
+# Directory storages cannot have their path modified with pvesm set.
+# Only update the content types.
+
+pvesm set hawkfiles \
+    --content iso,vztmpl,backup,snippets,import >/dev/null
+
+pass "hawkfiles configured."
+
+section "Current Storage Configuration"
+
+cat /etc/pve/storage.cfg
 
 echo
 pvesm status
 
-echo
-zfs list
-
-echo
-cat /etc/pve/storage.cfg
-
-success "Storage policy applied."
+pass "Module 10 completed successfully."
