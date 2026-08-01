@@ -2,47 +2,49 @@
 
 set -Eeuo pipefail
 
-source "$(dirname "$0")/../lib/common.sh"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${PROJECT_ROOT}/lib/common.sh"
 
 header "Module 10 - Storage Policy"
 
+############################################################
 section "Verify Storages"
 
-if storage_exists hawktank; then
-    pass "hawktank present."
-else
-    die "hawktank missing."
-fi
+storage_exists "${ZFS_STORAGE_ID}" \
+    || die "${ZFS_STORAGE_ID} missing."
 
-if storage_exists hawkfiles; then
-    pass "hawkfiles present."
-else
-    die "hawkfiles missing."
-fi
+storage_exists "${DIR_STORAGE_ID}" \
+    || die "${DIR_STORAGE_ID} missing."
 
-section "Configure hawktank"
+pass "Required storages present."
 
-pvesm set hawktank \
+############################################################
+section "Configure ${ZFS_STORAGE_ID}"
+
+pvesm set "${ZFS_STORAGE_ID}" \
     --content images,rootdir \
-    --sparse 1 >/dev/null
+    --blocksize 16k \
+    --sparse 1
 
-pass "hawktank configured."
+pass "${ZFS_STORAGE_ID} configured."
 
-section "Configure hawkfiles"
+############################################################
+section "Configure ${DIR_STORAGE_ID}"
 
-# Directory storages cannot have their path modified with pvesm set.
-# Only update the content types.
+pvesm set "${DIR_STORAGE_ID}" \
+    --content iso,vztmpl,backup,snippets,import
 
-pvesm set hawkfiles \
-    --content iso,vztmpl,backup,snippets,import >/dev/null
+pass "${DIR_STORAGE_ID} configured."
 
-pass "hawkfiles configured."
-
+############################################################
 section "Current Storage Configuration"
 
 cat /etc/pve/storage.cfg
 
 echo
+
 pvesm status
+
+echo
 
 pass "Module 10 completed successfully."
