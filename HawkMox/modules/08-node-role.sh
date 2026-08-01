@@ -5,56 +5,45 @@ set -Eeuo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${PROJECT_ROOT}/lib/common.sh"
 
-header "Module 08 - Node Role Detection"
+header "Module 08 - Node Role"
 
-HOST="$(hostname)"
+############################################################
 
-ROLE="application"
+section "Current Role"
 
-case "${HOST}" in
-    HawkMox0)
-        ROLE="primary"
-        ;;
+CURRENT_ROLE="$(get_role)"
 
-    HawkMox01)
-        ROLE="secondary"
-        ;;
+echo "Current Role : ${CURRENT_ROLE}"
 
-    HawkMox*)
-        ROLE="application"
-        ;;
-esac
+############################################################
 
-mkdir -p /etc/hawkmox
+section "Configure"
 
-cat >/etc/hawkmox/node.conf <<EOF
-ROLE=${ROLE}
-HOSTNAME=${HOST}
-EOF
+if [[ "${CURRENT_ROLE}" == "unknown" ]]
+then
 
-section "Detected Role"
+    ROLE="application"
 
-info "Hostname : ${HOST}"
-info "Role     : ${ROLE}"
+    set_role "${ROLE}"
 
-case "${ROLE}" in
-    primary)
+    success "Assigned default role '${ROLE}'."
 
-        info "Infrastructure node profile."
+else
 
-        ;;
+    success "Role already configured."
 
-    secondary)
+fi
 
-        info "Infrastructure failover profile."
+############################################################
 
-        ;;
+section "Runtime"
 
-    application)
+echo
 
-        info "Application node profile."
+echo "Hostname : $(hostname)"
 
-        ;;
-esac
+echo "Role     : $(get_role)"
 
-success "Node role assigned."
+echo
+
+success "Module 08 completed successfully."
