@@ -1,62 +1,53 @@
 #!/usr/bin/env bash
+
 set -Eeuo pipefail
 
-source "$(dirname "$0")/../lib/common.sh"
-
-if [[ -f /etc/hawkmox/node.conf ]]; then
-    source /etc/hawkmox/node.conf
-fi
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${PROJECT_ROOT}/lib/common.sh"
 
 header "Module 14 - HawkMox Deployment Report"
 
 REPORT="/root/hawkmox-report.txt"
 
-{
-echo "=================================================="
-echo " HawkMox Deployment Report"
-echo "=================================================="
-echo
-echo "Date: $(date)"
-echo
-echo "Hostname : $(hostname)"
-echo "Role     : ${ROLE:-unknown}"
-echo
-echo "Hardware : $(hardware_model)"
-echo "CPU      : $(cpu_model)"
-echo "Memory   : $(memory_gib) GiB"
-echo
+ROLE="$(get_role)"
 
-echo "========== Cluster =========="
-pvecm status
+cat > "${REPORT}" <<EOF
+==================================================
+ HawkMox Deployment Report
+==================================================
 
-echo
-echo "========== Storage =========="
-zpool status
-echo
-zfs list
-echo
-pvesm status
+Date: $(date)
 
-echo
-echo "========== Network =========="
-ip addr show vmbr0
-echo
-ip route
+Hostname : $(hostname)
+Role     : ${ROLE}
 
-echo
-echo "========== Time =========="
-chronyc tracking
+Hardware : $(hardware_model)
+CPU      : $(cpu_model)
+Memory   : $(memory_gib) GiB
 
-echo
-echo "========== Services =========="
-systemctl --no-pager --type=service --state=running \
-    | grep -E 'pve|corosync|chrony'
+========== Cluster ==========
+$(pvecm status)
 
-} > "$REPORT"
+========== ZFS ==========
+$(zpool status)
+
+========== Storage ==========
+$(pvesm status)
+
+========== Network ==========
+$(ip -br addr)
+
+========== Routes ==========
+$(ip route)
+
+========== Chrony ==========
+$(chronyc tracking)
+
+EOF
 
 section "Report"
 
 echo "Saved to:"
-echo "$REPORT"
+echo "${REPORT}"
 
 pass "Module 14 completed successfully."
