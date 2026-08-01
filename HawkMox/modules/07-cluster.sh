@@ -25,9 +25,9 @@ fi
 
 section "Joining Cluster"
 
-[[ -n "${CLUSTER_MASTER}" ]] || die "CLUSTER_MASTER not configured."
+[[ -n "${CLUSTER_MASTER_IP}" ]] || die "CLUSTER_MASTER not configured."
 
-info "Cluster Master: ${CLUSTER_MASTER}"
+info "Cluster Master: ${CLUSTER_MASTER_IP}"
 
 echo
 echo "About to join cluster '${CLUSTER_NAME}'"
@@ -37,7 +37,7 @@ read -rp "Type YES to continue: " CONFIRM
 
 [[ "${CONFIRM}" == "YES" ]] || die "Cancelled."
 
-pvecm add "${CLUSTER_MASTER}"
+pvecm add "${CLUSTER_MASTER_IP}"
 
 section "Verification"
 
