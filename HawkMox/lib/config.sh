@@ -1,48 +1,37 @@
 #!/usr/bin/env bash
 
-CONFIG_FILE="${PROJECT_ROOT}/config/hawkmox.conf"
+set -Eeuo pipefail
 
-[[ -f "${CONFIG_FILE}" ]] || {
-    echo
-    echo "Configuration file not found:"
-    echo "  ${CONFIG_FILE}"
-    echo
-    exit 1
+CONFIG_FILE="${PROJECT_ROOT}/configs/hawkmox.conf"
+
+load_config() {
+
+    [[ -f "${CONFIG_FILE}" ]] || return
+
+    source "${CONFIG_FILE}"
+
 }
 
-source "${CONFIG_FILE}"
+save_config() {
 
-############################################
-# Interactive Configuration
-############################################
+cat > "${CONFIG_FILE}" <<EOF
+ROLE=${ROLE}
+EOF
 
-if [[ -z "${CLUSTER_MASTER}" ]]; then
+}
 
-    echo
-    read -rp "Cluster master IP: " CLUSTER_MASTER
+set_role() {
 
-    sed -i \
-        "s|^CLUSTER_MASTER=.*|CLUSTER_MASTER=\"${CLUSTER_MASTER}\"|" \
-        "${CONFIG_FILE}"
+    ROLE="$1"
 
-fi
+    save_config
 
-if [[ -z "${DNS_SERVER}" ]]; then
+}
 
-    DNS_SERVER="$(ip route | awk '/default/ {print $3}')"
+get_role() {
 
-    sed -i \
-        "s|^DNS_SERVER=.*|DNS_SERVER=\"${DNS_SERVER}\"|" \
-        "${CONFIG_FILE}"
+    load_config
 
-fi
+    echo "${ROLE:-unknown}"
 
-if [[ -z "${TIME_SERVER}" ]]; then
-
-    TIME_SERVER="${DNS_SERVER}"
-
-    sed -i \
-        "s|^TIME_SERVER=.*|TIME_SERVER=\"${TIME_SERVER}\"|" \
-        "${CONFIG_FILE}"
-
-fi
+}
