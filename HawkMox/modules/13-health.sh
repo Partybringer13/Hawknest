@@ -2,78 +2,90 @@
 
 set -Eeuo pipefail
 
-source "$(dirname "$0")/../lib/common.sh"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${PROJECT_ROOT}/lib/common.sh"
 
 header "Module 13 - HawkMox Health Check"
 
 ############################################################
 section "Cluster"
 
-if pvecm status | grep -q "Quorate:.*Yes"; then
-    success "Cluster quorum healthy."
-else
-    die "Cluster is not quorate."
-fi
+cluster_quorate || die "Cluster is not quorate."
+
+pass "Cluster quorum healthy."
 
 ############################################################
 section "Corosync"
 
-systemctl is-active --quiet corosync \
-    && success "Corosync running." \
-    || die "Corosync not running."
+systemctl is-active --quiet corosync
+
+pass "Corosync running."
 
 ############################################################
 section "Storage"
 
-pool_exists hawktank \
-    && success "hawktank online." \
-    || die "hawktank missing."
+pool_exists "${POOL_NAME}" \
+    || die "Pool '${POOL_NAME}' missing."
 
-dataset_exists hawktank/vmstore \
-    && success "vmstore dataset present." \
-    || die "vmstore dataset missing."
+pass "${POOL_NAME} online."
 
-storage_exists hawktank \
-    && success "hawktank registered." \
-    || die "hawktank storage missing."
+dataset_exists "${POOL_NAME}/${VM_DATASET}" \
+    || die "VM dataset missing."
 
-storage_exists hawkfiles \
-    && success "hawkfiles registered." \
-    || die "hawkfiles storage missing."
+pass "${VM_DATASET} dataset present."
+
+storage_exists "${ZFS_STORAGE_ID}" \
+    || die "${ZFS_STORAGE_ID} storage missing."
+
+pass "${ZFS_STORAGE_ID} registered."
+
+storage_exists "${DIR_STORAGE_ID}" \
+    || die "${DIR_STORAGE_ID} storage missing."
+
+pass "${DIR_STORAGE_ID} registered."
 
 ############################################################
 section "Network"
 
-GATEWAY="$(ip route | awk '/default/ {print $3; exit}')"
+GW="$(gateway)"
 
-info "Gateway : ${GATEWAY}"
+[[ -n "${GW}" ]] || die "No default gateway."
 
-ping -c1 -W2 "${GATEWAY}" >/dev/null 2>&1 \
-    && success "Gateway reachable." \
-    || die "Gateway unreachable."
+info "Gateway : ${GW}"
 
-ping -c1 -W2 1.1.1.1 >/dev/null 2>&1 \
-    && success "Internet reachable." \
-    || warning "Internet unreachable."
+ping -c2 -W2 "${GW}" >/dev/null
+
+pass "Gateway reachable."
+
+ping -c2 -W2 1.1.1.1 >/dev/null
+
+pass "Internet reachable."
 
 ############################################################
 section "Time"
 
-if chronyc tracking | grep -q "Leap status.*Normal"; then
-    success "Chrony synchronized."
-else
-    warning "Chrony not synchronized."
-fi
+chronyc tracking | grep -q "Leap status.*Normal"
+
+pass "Chrony synchronized."
 
 ############################################################
 section "Services"
 
-for svc in pvedaemon pveproxy pvestatd pve-cluster; do
-    if systemctl is-active --quiet "$svc"; then
-        success "$svc running."
-    else
-        warning "$svc not running."
-    fi
+SERVICES=(
+    pvedaemon
+    pveproxy
+    pvestatd
+    pve-cluster
+)
+
+for SERVICE in "${SERVICES[@]}"
+do
+
+    systemctl is-active --quiet "${SERVICE}" \
+        || die "${SERVICE} not running."
+
+    pass "${SERVICE} running."
+
 done
 
 ############################################################
@@ -82,20 +94,17 @@ section "Resources"
 echo "CPU    : $(cpu_model)"
 echo "Memory : $(memory_gib) GiB"
 
-ARC_BYTES="$(cat /sys/module/zfs/parameters/zfs_arc_max 2>/dev/null || echo 0)"
-
-if [[ "$ARC_BYTES" -gt 0 ]]; then
-    ARC_GIB=$(( ARC_BYTES / 1024 / 1024 / 1024 ))
-    echo "ARC    : ${ARC_GIB} GiB"
-else
-    echo "ARC    : Unknown"
-fi
+echo "ARC    : $(awk '/size/ {print $3; exit}' /proc/spl/kstat/zfs/arcstats 2>/dev/null || echo "Unavailable")"
 
 ############################################################
 section "Summary"
 
 zpool list
+
 echo
+
 pvesm status
 
-success "Module 13 completed successfully."
+echo
+
+pass "Module 13 completed successfully."
