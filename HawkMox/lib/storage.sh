@@ -36,6 +36,8 @@ ensure_pool() {
         -O atime="${ATIME}" \
         -O xattr=sa \
         -O acltype=posixacl \
+        -O dnodesize=auto \
+        -O normalization=formD \
         -O mountpoint="/${POOL_NAME}" \
         "${POOL_NAME}" \
         "${APP_DISK}"
