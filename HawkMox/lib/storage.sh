@@ -36,26 +36,11 @@ ensure_pool() {
         -O atime="${ATIME}" \
         -O xattr=sa \
         -O acltype=posixacl \
-        -O mountpoint=none \
+        -O mountpoint="/${POOL_NAME}" \
         "${POOL_NAME}" \
         "${APP_DISK}"
 
     success "Created ZFS pool."
-
-}
-
-ensure_vm_dataset() {
-
-    if dataset_exists "${POOL_NAME}/${VM_DATASET}"
-    then
-        return
-    fi
-
-    zfs create \
-        -o mountpoint=none \
-        "${POOL_NAME}/${VM_DATASET}"
-
-    success "Created VM dataset."
 
 }
 
