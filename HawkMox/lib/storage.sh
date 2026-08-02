@@ -106,7 +106,7 @@ register_zfs_storage() {
     fi
 
     pvesm add zfspool "${ZFS_STORAGE_ID}" \
-        --pool "${POOL_NAME}/${VM_DATASET}" \
+        --pool "${POOL_NAME}" \
         --content images,rootdir \
         --sparse 1 \
         --blocksize 16k
