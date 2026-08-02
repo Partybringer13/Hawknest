@@ -30,8 +30,6 @@ section "Creating Storage"
 
 ensure_pool
 
-ensure_vm_dataset
-
 ensure_file_dataset
 
 ############################################################
