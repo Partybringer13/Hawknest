@@ -39,6 +39,7 @@ services:
       - "--certificatesresolvers.cloudflare.acme.email=partybringer@hotmail.com"
       - "--certificatesresolvers.cloudflare.acme.storage=/etc/traefik/acme.json"
       - "--certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge.disablepropagationcheck=true"
       - "--serverstransport.insecureskipverify=true"
       - "--entrypoints.websecure.http.tls.certresolver=cloudflare"
       - "--entrypoints.websecure.http.tls.domains[0].main=hawknest.quest"
