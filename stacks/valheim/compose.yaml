@@ -25,7 +25,7 @@ services:
 
       AUTO_UPDATE: 1
       AUTO_UPDATE_SCHEDULE: "0 1 * * *"
-      UPDATE_ON_STARTUP: 0
+      UPDATE_ON_STARTUP: 1
 
       AUTO_BACKUP: 1
       AUTO_BACKUP_SCHEDULE: "*/15 * * * *"
