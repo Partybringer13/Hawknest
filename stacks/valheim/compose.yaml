@@ -18,7 +18,7 @@ services:
       PUBLIC: 0
       TYPE: "BepInEx"
       MODS: |
-        Grantapher-ValheimPlus_Grantapher_Temporary-*
+        https://github.com/Grantapher/ValheimPlus/releases/download/0.10.1.0/ValheimPlus.dll
         Advize-PlantEasily-*
         Advize-PlantEverything-*
         JereKuusela-Server_devcommands-*
