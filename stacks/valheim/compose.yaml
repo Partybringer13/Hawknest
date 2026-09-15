@@ -23,6 +23,7 @@ services:
         Advize-PlantEverything-*
         JereKuusela-Server_devcommands-*
         sighsorry-Homestead-*
+        kpttr-Valheim_Ascended-*
 
       AUTO_UPDATE: 1
       AUTO_UPDATE_SCHEDULE: "0 1 * * *"
