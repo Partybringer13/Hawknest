@@ -22,8 +22,7 @@ services:
         Advize-PlantEasily-*
         Advize-PlantEverything-*
         JereKuusela-Server_devcommands-*
-
-      #sighsorry-Homestead-*
+        sighsorry-Homestead-*
 
       AUTO_UPDATE: 1
       AUTO_UPDATE_SCHEDULE: "0 1 * * *"
