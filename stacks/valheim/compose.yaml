@@ -28,6 +28,7 @@ services:
         shudnal-ConditionalConfigSync-*
         ValheimModding-JsonDotNET-*
         ValheimModding-YamlDotNet-*
+        Grillspett-GrillspettFlattenEarth-*
 
       AUTO_UPDATE: 1
       AUTO_UPDATE_SCHEDULE: "0 1 * * *"
