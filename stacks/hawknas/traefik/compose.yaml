@@ -40,6 +40,7 @@ services:
       - "--certificatesresolvers.cloudflare.acme.storage=/etc/traefik/acme.json"
       - "--certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53"
       - "--certificatesresolvers.cloudflare.acme.dnschallenge.propagation.requireallrns=false"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge.propagation.disableanschecks=true"      
       - "--serverstransport.insecureskipverify=true"
       - "--entrypoints.websecure.http.tls.certresolver=cloudflare"
       - "--entrypoints.websecure.http.tls.domains[0].main=hawknest.quest"
