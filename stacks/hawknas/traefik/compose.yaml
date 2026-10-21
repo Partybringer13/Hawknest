@@ -38,7 +38,7 @@ services:
       - "--certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare"
       - "--certificatesresolvers.cloudflare.acme.email=partybringer@hotmail.com"
       - "--certificatesresolvers.cloudflare.acme.storage=/etc/traefik/acme.json"
-      - "--certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53"
       - "--certificatesresolvers.cloudflare.acme.dnschallenge.propagation.requireallrns=false"
       - "--serverstransport.insecureskipverify=true"
       - "--entrypoints.websecure.http.tls.certresolver=cloudflare"
